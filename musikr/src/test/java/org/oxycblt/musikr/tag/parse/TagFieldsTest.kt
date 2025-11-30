@@ -268,6 +268,19 @@ class TagFieldsTest {
         // Test zero value
         metadata = createTestMetadata(xiphTags = mapOf("REPLAYGAIN_TRACK_GAIN" to listOf("0.0 dB")))
         assertNull(metadata.replayGainTrackAdjustment())
+
+        // Test MP4 ReplayGain tags
+        metadata =
+            createTestMetadata(
+                mp4Tags =
+                    mapOf("----:COM.APPLE.ITUNES:REPLAYGAIN_TRACK_GAIN" to listOf("-0.32 dB")))
+        assertEquals(-0.32f, metadata.replayGainTrackAdjustment())
+
+        metadata =
+            createTestMetadata(
+                mp4Tags =
+                    mapOf("----:COM.APPLE.ITUNES:REPLAYGAIN_ALBUM_GAIN" to listOf("-8.72 dB")))
+        assertEquals(-8.72f, metadata.replayGainAlbumAdjustment())
     }
 
     @Test
