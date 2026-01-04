@@ -203,7 +203,7 @@ sealed interface Music {
              */
             fun fromString(uid: String): UID? {
                 if (uid.startsWith("u")) {
-                    // switch to new micro-format parsing
+                    // new compressed-format parsing
                     val microFormat =
                         when (uid.getOrNull(1)) {
                             Format.AUXIO.microNamespace -> Format.AUXIO

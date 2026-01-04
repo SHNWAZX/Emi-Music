@@ -75,7 +75,8 @@ sealed class TabNode {
     companion object {
         fun fromString(str: String): TabNode? {
             if (str.startsWith("t")) {
-                return when (val id = str.getOrNull(1)) {
+                // new compressed id format
+                return when (str.getOrNull(1)) {
                     't' -> Root
                     'm' -> More
                     's' -> Home(MusicType.SONGS)
