@@ -51,7 +51,7 @@
     <string name="clr_orange">Orange</string>
     <string name="clr_brown">Brun</string>
     <string name="clr_grey">Gris</string>
-    <string name="fmt_lib_song_count">Titres chargés : %d</string>
+    <string name="fmt_lib_song_count">Titres chargés : %d</string>
     <plurals name="fmt_song_count">
         <item quantity="one">%d titre</item>
         <item quantity="many">%d titres</item>
@@ -175,7 +175,7 @@
     <string name="set_separators_comma">Virgule (,)</string>
     <string name="set_separators_semicolon">Point-virgule (;)</string>
     <string name="set_exclude_non_music_desc">Ignore les fichiers audio qui ne sont pas de la musique, tels que les podcasts</string>
-    <string name="set_separators_warning">Attention : L\'utilisation de ce paramètre peut entraîner l\'interprétation incorrecte de certaines balises comme ayant plusieurs valeurs. Vous pouvez résoudre ce problème en préfixant les caractères de séparation indésirables avec une barre oblique inverse (\\).</string>
+    <string name="set_separators_warning">Attention : L\'utilisation de ce paramètre peut entraîner l\'interprétation incorrecte de certaines balises comme ayant plusieurs valeurs. Vous pouvez résoudre ce problème en préfixant les caractères de séparation indésirables avec une barre oblique inverse (\\).</string>
     <string name="set_exclude_non_music">Exclure non-musique</string>
     <string name="set_play_song_from_album">Lire depuis l\'album</string>
     <string name="set_separators_slash">Barre oblique (/)</string>
@@ -208,7 +208,7 @@
     <string name="fmt_sample_rate">%d Hz</string>
     <string name="desc_skip_prev">Revenir au titre précédent</string>
     <string name="lbl_playlist_add">Ajouter à la playlist</string>
-    <string name="fmt_lib_artist_count">Artistes chargés : %d</string>
+    <string name="fmt_lib_artist_count">Artistes chargés : %d</string>
     <string name="set_rewind_prev">Rembobiner avant de passer en arrière</string>
     <string name="desc_artist_image">Image d\'artiste pour %s</string>
     <string name="def_track">Aucune piste</string>
@@ -218,8 +218,8 @@
     <string name="desc_tab_handle">Déplacer cet onglet</string>
     <string name="lbl_rename">Renommer</string>
     <string name="desc_change_repeat">Modifier le mode de répétition</string>
-    <string name="fmt_lib_album_count">Albums chargés : %d</string>
-    <string name="fmt_lib_total_duration">Durée totale : %s</string>
+    <string name="fmt_lib_album_count">Albums chargés : %d</string>
+    <string name="fmt_lib_total_duration">Durée totale : %s</string>
     <string name="desc_clear_search">Effacer la requête de recherche</string>
     <string name="desc_playlist_image">Image de la playlist pour %s</string>
     <string name="fmt_disc_no">Disque %d</string>
@@ -240,19 +240,19 @@
     <string name="fmt_bitrate">%d kbits/s</string>
     <string name="fmt_db_pos">+%.1f dB</string>
     <string name="fmt_db_neg">-%.1f dB</string>
-    <string name="fmt_deletion_info">Supprimer %s ? Cette opération ne peut pas être annulée.</string>
+    <string name="fmt_deletion_info">Supprimer %s ? Cette opération ne peut pas être annulée.</string>
     <string name="set_pre_amp_warning">Attention&amp;nbsp;: Le fait de régler le préampli très fort peut entraîner des distortions audibles sur certaines pistes audio.</string>
     <string name="fmt_def_playlist">Playlist %d</string>
     <string name="lbl_appears_on">Apparaît sur</string>
     <string name="lbl_rename_playlist">Renommer la playlist</string>
-    <string name="lbl_confirm_delete_playlist">Supprimer la playlist ?</string>
+    <string name="lbl_confirm_delete_playlist">Supprimer la playlist ?</string>
     <string name="lbl_share">Partager</string>
     <string name="desc_remove_song">Supprimer ce titre</string>
     <string name="desc_song_handle">Déplacer ce titre</string>
     <string name="desc_queue_bar">Ouvrir la file d\'attente</string>
     <string name="def_song_count">Aucun titre</string>
     <string name="fmt_editing">Modification de %s</string>
-    <string name="fmt_lib_genre_count">Genres chargés : %d</string>
+    <string name="fmt_lib_genre_count">Genres chargés : %d</string>
     <string name="desc_genre_image">Image de genre pour %s</string>
     <string name="cdc_flac">Codec audio gratuit sans perte (FLAC)</string>
     <string name="fmt_selected">%d sélectionnés</string>
@@ -287,7 +287,7 @@
     <string name="lbl_donate">Faire un don</string>
     <string name="lng_playlist_imported">Playlist importée</string>
     <string name="lbl_supporters">Soutiens</string>
-    <string name="lng_supporters_promo">Faites un don au projet pour que votre nom soit ajouté ici !</string>
+    <string name="lng_supporters_promo">Faites un don au projet pour que votre nom soit ajouté ici !</string>
     <string name="set_remember_pause">Garder la pause</string>
     <string name="set_remember_pause_desc">La lecture/pause reste active lors du passage à la file d\'attente ou de sa modification</string>
     <string name="lbl_export">Exporter</string>
@@ -299,7 +299,7 @@
     <string name="lbl_windows_paths">Utiliser les chemins compatibles Windows</string>
     <string name="set_replay_gain_mode_off">Désactivé</string>
     <string name="lbl_start_playback">Démarrer la lecture</string>
-    <string name="lng_tasker_start">Démarre Auxio en utilisant le dernier état enregistré. S\'il n\'y en a aucun, tous les titres seront remélangés et la lecture commencera immédiatement.\n\nATTENTION : Faites attention en contrôlant ce service, si vous le fermez puis essayez de l\'utiliser à nouveau, vous ferez probablement planter l\'appli.</string>
+    <string name="lng_tasker_start">Démarre Auxio en utilisant le dernier état enregistré. S\'il n\'y en a aucun, tous les titres seront remélangés et la lecture commencera immédiatement.\n\nATTENTION : Faites attention en contrôlant ce service, si vous le fermez puis essayez de l\'utiliser à nouveau, vous ferez probablement planter l\'appli.</string>
     <string name="lbl_more">Plus</string>
     <string name="lbl_feedback">Avis</string>
     <string name="lbl_github">Faire un ticket sur GitHub</string>
@@ -347,4 +347,5 @@
         <item quantity="many">%d secondes</item>
         <item quantity="other">%d secondes</item>
     </plurals>
+    <string name="fmt_lib_total_size">Taille totale : %s</string>
 </resources>
