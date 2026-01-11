@@ -53,6 +53,15 @@ class QueueBottomSheetBehavior<V : View>(context: Context, attributeSet: Attribu
     override fun getIdealBarHeight(context: Context) =
         context.getDimenPixels(R.dimen.size_touchable_large)
 
+    override fun onLayoutChild(parent: CoordinatorLayout, child: V, layoutDirection: Int): Boolean {
+        // Pre-calculate expandedOffset before the sheet is positioned by super.onLayoutChild().
+        // This ensures the sheet uses the correct offset during configuration changes like
+        // split-screen resize, where layout happens before insets are re-applied.
+        val effectiveBarHeight = if (barHeight > 0) barHeight else getIdealBarHeight(child.context)
+        expandedOffset = effectiveBarHeight + barSpacing
+        return super.onLayoutChild(parent, child, layoutDirection)
+    }
+
     override fun layoutDependsOn(parent: CoordinatorLayout, child: V, dependency: View) =
         dependency.id == R.id.playback_bar_fragment
 
@@ -61,8 +70,16 @@ class QueueBottomSheetBehavior<V : View>(context: Context, attributeSet: Attribu
         child: V,
         dependency: View
     ): Boolean {
+        val oldHeight = barHeight
         barHeight = dependency.height
-        // No change, just grabbed the height
+        // If bar height changed, force insets to be recalculated with the new value
+        // and signal that the child needs to be re-laid out. This handles cases where
+        // the sheet was positioned before the bar was measured or during configuration
+        // changes (e.g., split-screen resize) where layout order causes stale values.
+        if (oldHeight != barHeight && barHeight > 0) {
+            child.requestApplyInsets()
+            return true
+        }
         return false
     }
 
