@@ -52,6 +52,14 @@ internal interface DocumentPathFactory {
     fun unpackDocumentTreeUri(uri: Uri): Path?
 
     /**
+     * Serializes a [Path] instance into a document tree URI format path.
+     *
+     * @param path The [Path] instance to serialize.
+     * @return The serialized path.
+     */
+    fun toDocumentId(path: Path): String
+
+    /**
      * Deserializes a document tree URI format path into a [Path] instance.
      *
      * @param path The path to deserialize.
@@ -113,6 +121,15 @@ private class DocumentPathFactoryImpl(
         val treeUri = DocumentsContract.getTreeDocumentId(docUri)
         return fromDocumentId(treeUri)
     }
+
+    override fun toDocumentId(path: Path): String =
+        when (val volume = path.volume) {
+            // The primary storage has a volume prefix of "primary", regardless
+            // of if it's internal or not.
+            is Volume.Internal -> "$DOCUMENT_URI_PRIMARY_NAME:${path.components}"
+            // Document tree URIs consist of a prefixed volume name followed by a relative path.
+            is Volume.External -> "${volume.id}:${path.components}"
+        }
 
     override fun fromDocumentId(path: String): Path? {
         // Document tree URIs consist of a prefixed volume name followed by a relative path,

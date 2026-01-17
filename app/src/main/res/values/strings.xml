@@ -347,7 +347,6 @@
     <string name="err_no_app">No app found that can handle this task</string>
     <!-- No folders in the "Music Folders" setting -->
     <string name="err_bad_location">This folder is not supported</string>
-    <string name="err_weird_location">Warning: This folder is managed by a 3rd-party</string>
     <string name="lbl_no_folders">No folders</string>
 
     <!-- Description Namespace | Accessibility Strings -->

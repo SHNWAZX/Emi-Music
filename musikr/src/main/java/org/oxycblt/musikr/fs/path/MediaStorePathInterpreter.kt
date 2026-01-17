@@ -136,10 +136,6 @@ private constructor(private val cursor: Cursor, volumeManager: VolumeManager) :
             var template = ""
             for (i in paths.indices) {
                 val path = paths[i]
-                if (path.volume == null) {
-                    // FIXME: This means we are silently ignoring third-party storage volumes
-                    continue
-                }
                 val volume = path.volume.components ?: continue
                 template +=
                     if (args.isEmpty()) {
@@ -220,11 +216,6 @@ private constructor(private val cursor: Cursor, volumeManager: VolumeManager) :
             var template = ""
             for (i in paths.indices) {
                 val path = paths[i]
-                if (path.volume == null) {
-                    // FIXME: This means we are silently ignoring third-party storage volumes
-                    //  in MediaStore.
-                    continue
-                }
                 template +=
                     if (args.isEmpty()) {
                         "(${MediaStore.Audio.AudioColumns.VOLUME_NAME} LIKE ? " +

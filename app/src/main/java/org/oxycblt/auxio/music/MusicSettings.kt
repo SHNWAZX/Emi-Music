@@ -247,10 +247,10 @@ class MusicSettingsImpl @Inject constructor(@ApplicationContext private val cont
 
     private fun String.toOpenedLocations(): List<Location.Opened> =
         splitEscaped { it == ';' }
-            .mapNotNull { Location.Unopened.from(context, it.toUri()).open(context) }
+            .mapNotNull { Location.Unopened.from(context, it.toUri())?.open(context) }
 
     private fun String.toUnopenedLocations(): List<Location.Unopened> =
-        splitEscaped { it == ';' }.map { Location.Unopened.from(context, it.toUri()) }
+        splitEscaped { it == ';' }.mapNotNull { Location.Unopened.from(context, it.toUri()) }
 
     private inline fun String.splitEscaped(selector: (Char) -> Boolean): List<String> {
         val split = mutableListOf<String>()
