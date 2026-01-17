@@ -42,8 +42,6 @@ import org.oxycblt.auxio.music.resolve
 import org.oxycblt.auxio.music.resolveNames
 import org.oxycblt.auxio.music.service.MediaSessionUID
 import org.oxycblt.auxio.music.service.toMediaDescription
-import org.oxycblt.auxio.playback.ActionMode
-import org.oxycblt.auxio.playback.PlaybackSettings
 import org.oxycblt.auxio.playback.state.PlaybackStateManager
 import org.oxycblt.auxio.playback.state.Progression
 import org.oxycblt.auxio.playback.state.QueueChange
@@ -65,17 +63,15 @@ private constructor(
     private val context: Context,
     private val foregroundListener: ForegroundListener,
     private val playbackManager: PlaybackStateManager,
-    private val playbackSettings: PlaybackSettings,
     private val bitmapProvider: BitmapProvider,
     private val imageSettings: ImageSettings,
     private val mediaSessionInterface: MediaSessionInterface,
-) : PlaybackStateManager.Listener, ImageSettings.Listener, PlaybackSettings.Listener {
+) : PlaybackStateManager.Listener, ImageSettings.Listener {
 
     class Factory
     @Inject
     constructor(
         private val playbackManager: PlaybackStateManager,
-        private val playbackSettings: PlaybackSettings,
         private val bitmapProvider: BitmapProvider,
         private val imageSettings: ImageSettings,
         private val mediaSessionInterface: MediaSessionInterface,
@@ -85,7 +81,6 @@ private constructor(
                 context,
                 foregroundListener,
                 playbackManager,
-                playbackSettings,
                 bitmapProvider,
                 imageSettings,
                 mediaSessionInterface,
@@ -102,7 +97,6 @@ private constructor(
 
     fun attach() {
         playbackManager.addListener(this)
-        playbackSettings.registerListener(this)
         imageSettings.registerListener(this)
         mediaSession.apply {
             isActive = true
@@ -121,7 +115,6 @@ private constructor(
     fun release() {
         bitmapProvider.release()
         playbackManager.removeListener(this)
-        playbackSettings.unregisterListener(this)
         imageSettings.unregisterListener(this)
         mediaSession.apply {
             isActive = false
@@ -159,7 +152,7 @@ private constructor(
                 PlaybackStateCompat.SHUFFLE_MODE_NONE
             }
         )
-        invalidateSecondaryAction()
+        invalidateNotificationActions()
     }
 
     override fun onNewPlayback(
@@ -190,7 +183,7 @@ private constructor(
             }
         )
 
-        invalidateSecondaryAction()
+        invalidateNotificationActions()
     }
 
     // --- SETTINGS OVERRIDES ---
@@ -198,11 +191,6 @@ private constructor(
     override fun onImageSettingsChanged() {
         // Need to reload the metadata cover.
         updateMediaMetadata(playbackManager.currentSong, playbackManager.parent)
-    }
-
-    override fun onNotificationActionChanged() {
-        // Need to re-load the action shown in the notification.
-        invalidateSecondaryAction()
     }
 
     // --- MEDIASESSION OVERRIDES ---
@@ -334,60 +322,40 @@ private constructor(
 
         // Android 13+ relies on custom actions in the notification.
 
-        // Add the secondary action (either repeat/shuffle depending on the configuration)
-        val secondaryAction =
-            when (playbackSettings.notificationAction) {
-                ActionMode.SHUFFLE -> {
-                    L.d("Using shuffle MediaSession action")
-                    PlaybackStateCompat.CustomAction.Builder(
-                        PlaybackActions.ACTION_INVERT_SHUFFLE,
-                        context.getString(R.string.desc_shuffle),
-                        if (playbackManager.isShuffled) {
-                            R.drawable.ic_shuffle_on_24
-                        } else {
-                            R.drawable.ic_shuffle_off_24
-                        },
-                    )
-                }
-                else -> {
-                    L.d("Using repeat mode MediaSession action")
-                    PlaybackStateCompat.CustomAction.Builder(
-                        PlaybackActions.ACTION_INC_REPEAT_MODE,
-                        context.getString(R.string.desc_change_repeat),
-                        playbackManager.repeatMode.icon,
-                    )
-                }
-            }
-        state.addCustomAction(secondaryAction.build())
-
-        // Add the exit action so the service can be closed
-        val exitAction =
+        // Add repeat action
+        val repeatAction =
             PlaybackStateCompat.CustomAction.Builder(
-                    PlaybackActions.ACTION_EXIT,
-                    context.getString(R.string.desc_exit),
-                    R.drawable.ic_close_24,
+                    PlaybackActions.ACTION_INC_REPEAT_MODE,
+                    context.getString(R.string.desc_change_repeat),
+                    playbackManager.repeatMode.icon,
                 )
                 .build()
-        state.addCustomAction(exitAction)
+        state.addCustomAction(repeatAction)
+
+        // Add shuffle action
+        val shuffleAction =
+            PlaybackStateCompat.CustomAction.Builder(
+                    PlaybackActions.ACTION_INVERT_SHUFFLE,
+                    context.getString(R.string.desc_shuffle),
+                    if (playbackManager.isShuffled) {
+                        R.drawable.ic_shuffle_on_24
+                    } else {
+                        R.drawable.ic_shuffle_off_24
+                    },
+                )
+                .build()
+        state.addCustomAction(shuffleAction)
 
         mediaSession.setPlaybackState(state.build())
     }
 
-    /** Invalidate the "secondary" action (i.e shuffle/repeat mode). */
-    private fun invalidateSecondaryAction() {
-        L.d("Invalidating secondary action")
+    /** Invalidate both repeat and shuffle notification actions. */
+    private fun invalidateNotificationActions() {
+        L.d("Invalidating notification actions")
         invalidateSessionState()
 
-        when (playbackSettings.notificationAction) {
-            ActionMode.SHUFFLE -> {
-                L.d("Using shuffle notification action")
-                _notification.updateShuffled(playbackManager.isShuffled)
-            }
-            else -> {
-                L.d("Using repeat mode notification action")
-                _notification.updateRepeatMode(playbackManager.repeatMode)
-            }
-        }
+        _notification.updateRepeatMode(playbackManager.repeatMode)
+        _notification.updateShuffled(playbackManager.isShuffled)
 
         if (!bitmapProvider.isBusy) {
             L.d("Not loading a bitmap, post the notification")
@@ -427,7 +395,7 @@ private class PlaybackNotification(
         addAction(
             buildAction(context, PlaybackActions.ACTION_SKIP_NEXT, R.drawable.ic_skip_next_24)
         )
-        addAction(buildAction(context, PlaybackActions.ACTION_EXIT, R.drawable.ic_close_24))
+        addAction(buildShuffleAction(context, false))
 
         setStyle(
             MediaStyle(this).setMediaSession(sessionToken).setShowActionsInCompactView(1, 2, 3)
@@ -486,7 +454,7 @@ private class PlaybackNotification(
      */
     fun updateShuffled(isShuffled: Boolean) {
         L.d("Applying shuffle action: $isShuffled")
-        mActions[0] = buildShuffleAction(context, isShuffled)
+        mActions[4] = buildShuffleAction(context, isShuffled)
     }
 
     // --- NOTIFICATION ACTION BUILDERS ---

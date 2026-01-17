@@ -37,8 +37,6 @@ import timber.log.Timber as L
 interface PlaybackSettings : Settings<PlaybackSettings.Listener> {
     /** The action to display on the playback bar. */
     val barAction: ActionMode
-    /** The action to display in the playback notification. */
-    val notificationAction: ActionMode
     /** Whether to start playback when a headset is plugged in. */
     val headsetAutoplay: Boolean
     /** The current ReplayGain configuration. */
@@ -66,9 +64,6 @@ interface PlaybackSettings : Settings<PlaybackSettings.Listener> {
     interface Listener {
         /** Called when one of the ReplayGain configurations have changed. */
         fun onReplayGainSettingsChanged() {}
-
-        /** Called when [notificationAction] has changed. */
-        fun onNotificationActionChanged() {}
 
         /** Called when [barAction] has changed. */
         fun onBarActionChanged() {}
@@ -103,12 +98,6 @@ class PlaybackSettingsImpl @Inject constructor(@ApplicationContext context: Cont
             ActionMode.fromIntCode(
                 sharedPreferences.getInt(getString(R.string.set_key_bar_action), Int.MIN_VALUE)
             ) ?: ActionMode.NEXT
-
-    override val notificationAction: ActionMode
-        get() =
-            ActionMode.fromIntCode(
-                sharedPreferences.getInt(getString(R.string.set_key_notif_action), Int.MIN_VALUE)
-            ) ?: ActionMode.REPEAT
 
     override val headsetAutoplay: Boolean
         get() = sharedPreferences.getBoolean(getString(R.string.set_key_headset_autoplay), false)
@@ -203,10 +192,6 @@ class PlaybackSettingsImpl @Inject constructor(@ApplicationContext context: Cont
             getString(R.string.set_key_pre_amp_without) -> {
                 L.d("Dispatching ReplayGain setting change")
                 listener.onReplayGainSettingsChanged()
-            }
-            getString(R.string.set_key_notif_action) -> {
-                L.d("Dispatching notification setting change")
-                listener.onNotificationActionChanged()
             }
             getString(R.string.set_key_bar_action) -> {
                 L.d("Dispatching bar action change")

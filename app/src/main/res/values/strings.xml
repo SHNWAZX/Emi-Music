@@ -246,7 +246,6 @@
     <string name="set_lib_tabs_desc">Change visibility and order of library tabs</string>
     <!-- Skip to next (song) -->
     <string name="set_bar_action">Custom playback bar action</string>
-    <string name="set_notif_action">Custom notification action</string>
     <string name="set_action_mode_next">Skip to next</string>
     <string name="set_action_mode_repeat">Repeat mode</string>
     <string name="set_behavior">Behavior</string>

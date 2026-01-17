@@ -45,7 +45,6 @@
     <string name="set_key_hide_collaborators" translatable="false">auxio_hide_collaborators</string>
     <string name="set_key_round_mode" translatable="false">auxio_round_covers</string>
     <string name="set_key_bar_action" translatable="false">auxio_bar_action</string>
-    <string name="set_key_notif_action" translatable="false">auxio_notif_action</string>
 
     <string name="set_key_search_filter_to" translatable="false">KEY_SEARCH_FILTER</string>
 
@@ -107,16 +106,6 @@
 
     <integer-array name="values_bar_action">
         <item>@integer/action_mode_next</item>
-        <item>@integer/action_mode_repeat</item>
-        <item>@integer/action_mode_shuffle</item>
-    </integer-array>
-
-    <integer-array name="entries_notif_action">
-        <item>@string/set_action_mode_repeat</item>
-        <item>@string/lbl_shuffle</item>
-    </integer-array>
-
-    <integer-array name="values_notif_action">
         <item>@integer/action_mode_repeat</item>
         <item>@integer/action_mode_shuffle</item>
     </integer-array>

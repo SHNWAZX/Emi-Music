@@ -102,7 +102,7 @@ private constructor(
 
     private fun handleExitRequest() {
         if (isAppForegrounded()) {
-            // (x) in notification will no longer exist, but it might still
+            // (x) in notification no longer exists, but it might still
             // be triggered by other ways, e.g. Bluetooth devices.
             L.d("Exit Requested: App visible, pausing")
             playbackManager.playing(false)
