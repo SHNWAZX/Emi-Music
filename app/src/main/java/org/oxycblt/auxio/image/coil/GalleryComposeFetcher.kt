@@ -62,7 +62,7 @@ import org.oxycblt.musikr.covers.CoverCollection
 
 data class GalleryCoverCollection(
     val covers: CoverCollection,
-    val useRoundedCorners: Boolean,
+    val cornerRadiusRatio: Float,
     val zOrder: List<Int>,
 )
 
@@ -101,8 +101,7 @@ private constructor(
         if (bitmaps.size != streams.size) {
             return null
         }
-        val cornerRadiusPx =
-            if (data.useRoundedCorners) outputSize * ComposeCoverDefaults.CORNER_RATIO else 0f
+        val cornerRadiusPx = outputSize * data.cornerRadiusRatio
         val collageBitmap =
             CollageGenerator.generate(
                 bitmaps,
@@ -320,8 +319,7 @@ private constructor(
 
     class Keyer @Inject constructor() : CoilKeyer<GalleryCoverCollection> {
         override fun key(data: GalleryCoverCollection, options: Options): String {
-            val config =
-                "${if (data.useRoundedCorners) "r" else "s"}.${data.zOrder.joinToString(".")}"
+            val config = "${data.cornerRadiusRatio}.${data.zOrder.joinToString(".")}"
             return "g:${data.covers.hashCode()}.${options.size.width}.${options.size.height}.$config"
         }
     }

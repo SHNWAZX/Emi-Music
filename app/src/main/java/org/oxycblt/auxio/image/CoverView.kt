@@ -52,6 +52,7 @@ import com.google.android.material.shape.RelativeCornerSize
 import com.google.android.material.shape.ShapeAppearanceModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.math.min
 import kotlin.random.Random
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.image.coil.GalleryCoverCollection
@@ -393,7 +394,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         bindImpl(
             SmatteringCoverCollection(
                 artist.covers,
-                uiSettings.roundMode,
+                coverCollectionCornerRatio(),
                 coverCollectionFanAngle(uidSeed),
                 coverCollectionTiltAngle(uidSeed),
                 coverCollectionZOrder(uidSeed),
@@ -415,7 +416,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         bindImpl(
             GalleryCoverCollection(
                 genre.covers,
-                uiSettings.roundMode,
+                coverCollectionCornerRatio(),
                 coverCollectionZOrder(genre.uid.hashCode()),
             ),
             context.getString(R.string.desc_genre_image, genre.name),
@@ -433,7 +434,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         bindImpl(
             StackCoverCollection(
                 playlist.covers,
-                uiSettings.roundMode,
+                coverCollectionCornerRatio(),
                 coverCollectionZOrder(playlist.uid.hashCode()),
             ),
             context.getString(R.string.desc_playlist_image, playlist.name),
@@ -483,6 +484,22 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         CoilUtils.dispose(image)
         imageLoader.enqueue(request.build())
         contentDescription = desc
+    }
+
+    private fun coverCollectionCornerRatio(): Float {
+        if (!uiSettings.roundMode) {
+            return 0f
+        }
+        val bounds = resolveCornerBounds() ?: return 0f
+        val cornerRadiusPx = shapeAppearance.topLeftCornerSize.getCornerSize(bounds)
+        if (cornerRadiusPx <= 0f) {
+            return 0f
+        }
+        val minSize = min(bounds.width(), bounds.height())
+        if (minSize <= 0f) {
+            return 0f
+        }
+        return cornerRadiusPx / minSize
     }
 
     private fun coverCollectionZOrder(uidSeed: Int): List<Int> {

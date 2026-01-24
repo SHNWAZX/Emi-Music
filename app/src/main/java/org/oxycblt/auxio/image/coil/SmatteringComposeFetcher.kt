@@ -65,7 +65,7 @@ private const val OUTSET_PERCENT = 0.08f
 
 data class SmatteringCoverCollection(
     val covers: CoverCollection,
-    val useRoundedCorners: Boolean,
+    val cornerRadiusRatio: Float,
     val fanAngleDeg: Float,
     val tiltAngleDeg: Float,
     val zOrder: List<Int>,
@@ -106,8 +106,7 @@ private constructor(
         if (bitmaps.size != streams.size) {
             return null
         }
-        val cornerRadiusPx =
-            if (data.useRoundedCorners) outputSize * ComposeCoverDefaults.CORNER_RATIO else 0f
+        val cornerRadiusPx = outputSize * data.cornerRadiusRatio
         val collageBitmap =
             StackCollageGenerator.generate(
                 bitmaps,
@@ -325,7 +324,7 @@ private constructor(
     class Keyer @Inject constructor() : CoilKeyer<SmatteringCoverCollection> {
         override fun key(data: SmatteringCoverCollection, options: Options): String {
             val config =
-                "${if (data.useRoundedCorners) "r" else "s"}.${data.fanAngleDeg}.${data.tiltAngleDeg}.${data.zOrder.joinToString(".")}"
+                "${data.cornerRadiusRatio}.${data.fanAngleDeg}.${data.tiltAngleDeg}.${data.zOrder.joinToString(".")}"
             return "m:${data.covers.hashCode()}.${options.size.width}.${options.size.height}.$config"
         }
     }
