@@ -22,11 +22,7 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.PathMeasure
-import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -35,11 +31,13 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.math.MathUtils
 import androidx.dynamicanimation.animation.FloatValueHolder
 import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
 import com.google.android.material.R as MR
-import com.google.android.material.motion.MotionUtils
+import com.google.android.material.wave.PathPoint
+import com.google.android.material.wave.RoundedBlockRenderer
+import com.google.android.material.wave.WaveMotionUtils
+import com.google.android.material.wave.WavePathCache
+import com.google.android.material.wave.applyRampEasing
 import kotlin.math.abs
-import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -61,18 +59,11 @@ constructor(
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val activePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
-    private val cachedWavePath = Path()
-    private val displayedWavePath = Path()
-    private val pathMeasure = PathMeasure()
-    private val waveTransform = Matrix()
+    private val wavePathCache = WavePathCache()
+    private val roundedBlockRenderer = RoundedBlockRenderer()
 
-    // Pre-allocated objects used in drawRoundedBlock.
     private val startPoint = PathPoint()
     private val endPoint = PathPoint()
-    private val drawRect = RectF()
-    private val patchRect = RectF()
-    private val clipRect = RectF()
-    private val roundedRectPath = Path()
 
     private var trackThicknessPx =
         context.resources.getDimensionPixelSize(MR.dimen.mtrl_progress_track_thickness)
@@ -90,10 +81,6 @@ constructor(
 
     private var trackLength = 0f
     private var totalTrackLengthFraction = 1f
-
-    private var cachedWavelength = -1
-    private var cachedTrackLength = -1f
-    private var adjustedWavelength = 0f
 
     private var configuredWavelengthPx = 0
     private var configuredAmplitudePx = 0
@@ -246,7 +233,7 @@ constructor(
     ) {
         if (wavelengthPx > 0) {
             configuredWavelengthPx = abs(wavelengthPx)
-            cachedWavelength = -1
+            wavePathCache.markDirty()
         }
 
         if (amplitudePx > 0) {
@@ -549,7 +536,7 @@ constructor(
 
         if (drawWavyPath) {
             ensureCachedWavePath(trackLength, configuredWavelengthPx)
-            if (adjustedWavelength <= EPSILON || pathMeasure.length <= EPSILON) {
+            if (wavePathCache.adjustedWavelength <= EPSILON || wavePathCache.pathMeasure.length <= EPSILON) {
                 drawWavyPath = false
             }
         }
@@ -569,7 +556,7 @@ constructor(
                 amplitudeFraction = amplitudeFraction,
                 phaseFraction = phaseFraction,
             )
-            canvas.drawPath(displayedWavePath, paint)
+            canvas.drawPath(wavePathCache.displayedWavePath, paint)
         }
 
         if (!useStrokeCap) {
@@ -602,99 +589,29 @@ constructor(
         amplitudeFraction: Float,
         phaseFraction: Float,
     ) {
-        displayedWavePath.rewind()
-        if (pathMeasure.length <= EPSILON) {
-            return
-        }
-
-        var adjustedStart = start
-        var adjustedEnd = end
-        var trackStartX = -trackLength / 2f
-
-        if (adjustedWavelength > EPSILON) {
-            val cycleCount = trackLength / adjustedWavelength
-            if (cycleCount > EPSILON) {
-                val phaseFractionInPath = phaseFraction / cycleCount
-                val ratio = cycleCount / (cycleCount + 1f)
-                adjustedStart = (adjustedStart + phaseFractionInPath) * ratio
-                adjustedEnd = (adjustedEnd + phaseFractionInPath) * ratio
-            }
-            trackStartX -= phaseFraction * adjustedWavelength
-        }
-
-        val startDistance = adjustedStart * pathMeasure.length
-        val endDistance = adjustedEnd * pathMeasure.length
-        pathMeasure.getSegment(startDistance, endDistance, displayedWavePath, true)
-
-        startPoint.reset()
-        pathMeasure.getPosTan(startDistance, startPoint.posVec, startPoint.tanVec)
-        endPoint.reset()
-        pathMeasure.getPosTan(endDistance, endPoint.posVec, endPoint.tanVec)
-
-        waveTransform.reset()
-        waveTransform.setTranslate(trackStartX, 0f)
-        startPoint.translate(trackStartX, 0f)
-        endPoint.translate(trackStartX, 0f)
-
-        val scaledAmplitude = displayedAmplitude * amplitudeFraction
-        waveTransform.postScale(1f, scaledAmplitude)
-        startPoint.scale(1f, scaledAmplitude)
-        endPoint.scale(1f, scaledAmplitude)
-
-        displayedWavePath.transform(waveTransform)
+        wavePathCache.calculateDisplayedWavePath(
+            trackLength = trackLength,
+            start = start,
+            end = end,
+            amplitudeFraction = amplitudeFraction,
+            phaseFraction = phaseFraction,
+            displayedAmplitude = displayedAmplitude,
+            startPoint = startPoint,
+            endPoint = endPoint,
+            baseTranslationX = -trackLength / 2f,
+            baseTranslationY = 0f,
+            scaleAroundPivotY = false,
+            clampSegmentFractions = false,
+            epsilon = EPSILON,
+        )
     }
 
     private fun ensureCachedWavePath(trackLength: Float, wavelength: Int) {
-        if (
-            cachedTrackLength == trackLength &&
-                cachedWavelength == wavelength &&
-                adjustedWavelength > 0f
-        ) {
-            return
-        }
-
-        cachedTrackLength = trackLength
-        cachedWavelength = wavelength
-        invalidateCachedWavePath(trackLength, wavelength)
+        wavePathCache.ensureCachedWavePath(trackLength, wavelength)
     }
 
     private fun invalidateCachedWavePath(trackLength: Float, wavelength: Int) {
-        cachedWavePath.rewind()
-        adjustedWavelength = 0f
-
-        if (trackLength <= 0f || wavelength <= 0) {
-            pathMeasure.setPath(cachedWavePath, false)
-            return
-        }
-
-        val cycleCount = max(1, (trackLength / wavelength).toInt())
-        adjustedWavelength = trackLength / cycleCount
-
-        for (i in 0..cycleCount) {
-            val cycle = i.toFloat()
-            cachedWavePath.cubicTo(
-                2 * cycle + WAVE_SMOOTHNESS,
-                0f,
-                2 * cycle + 1 - WAVE_SMOOTHNESS,
-                1f,
-                2 * cycle + 1,
-                1f,
-            )
-            cachedWavePath.cubicTo(
-                2 * cycle + 1 + WAVE_SMOOTHNESS,
-                1f,
-                2 * cycle + 2 - WAVE_SMOOTHNESS,
-                0f,
-                2 * cycle + 2,
-                0f,
-            )
-        }
-
-        waveTransform.reset()
-        waveTransform.setScale(adjustedWavelength / 2f, -2f)
-        waveTransform.postTranslate(0f, 1f)
-        cachedWavePath.transform(waveTransform)
-        pathMeasure.setPath(cachedWavePath, false)
+        wavePathCache.invalidateCachedWavePath(trackLength, wavelength)
     }
 
     private fun canAnimateWave(): Boolean {
@@ -778,11 +695,6 @@ constructor(
         return fullyRounded && sameInnerOuter
     }
 
-    private fun applyRampEasing(fraction: Float): Float {
-        val clamped = fraction.coerceIn(0f, 1f)
-        return clamped * clamped * (3f - 2f * clamped)
-    }
-
     private fun drawRoundedBlock(
         canvas: Canvas,
         paint: Paint,
@@ -791,18 +703,14 @@ constructor(
         drawHeight: Float,
         drawCornerSize: Float,
     ) {
-        drawRoundedBlock(
+        roundedBlockRenderer.drawRoundedBlock(
             canvas = canvas,
             paint = paint,
             drawCenter = drawCenter,
             drawWidth = drawWidth,
             drawHeight = drawHeight,
+            displayedTrackThickness = displayedTrackThickness,
             drawCornerSize = drawCornerSize,
-            clipCenter = null,
-            clipWidth = 0f,
-            clipHeight = 0f,
-            clipCornerSize = 0f,
-            clipRight = false,
         )
     }
 
@@ -819,79 +727,21 @@ constructor(
         clipCornerSize: Float,
         clipRight: Boolean,
     ) {
-        var localDrawHeight = min(drawHeight, displayedTrackThickness)
-        var localClipWidth = clipWidth
-        var localClipHeight = clipHeight
-        var localClipCornerSize = clipCornerSize
-
-        drawRect.set(-drawWidth / 2f, -localDrawHeight / 2f, drawWidth / 2f, localDrawHeight / 2f)
-        paint.style = Paint.Style.FILL
-
-        canvas.save()
-        if (clipCenter != null) {
-            localClipHeight = min(localClipHeight, displayedTrackThickness)
-            localClipCornerSize =
-                min(
-                    localClipWidth / 2f,
-                    localClipCornerSize * localClipHeight / displayedTrackThickness,
-                )
-
-            if (clipRight) {
-                val leftEdgeDiff =
-                    (clipCenter.posVec[0] - localClipCornerSize) -
-                        (drawCenter.posVec[0] - drawCornerSize)
-                if (leftEdgeDiff > 0f) {
-                    clipCenter.translate(-leftEdgeDiff / 2f, 0f)
-                    localClipWidth += leftEdgeDiff
-                }
-                patchRect.set(0f, -localDrawHeight / 2f, drawWidth / 2f, localDrawHeight / 2f)
-            } else {
-                val rightEdgeDiff =
-                    (clipCenter.posVec[0] + localClipCornerSize) -
-                        (drawCenter.posVec[0] + drawCornerSize)
-                if (rightEdgeDiff < 0f) {
-                    clipCenter.translate(-rightEdgeDiff / 2f, 0f)
-                    localClipWidth -= rightEdgeDiff
-                }
-                patchRect.set(-drawWidth / 2f, -localDrawHeight / 2f, 0f, localDrawHeight / 2f)
-            }
-
-            clipRect.set(
-                -localClipWidth / 2f,
-                -localClipHeight / 2f,
-                localClipWidth / 2f,
-                localClipHeight / 2f,
-            )
-
-            canvas.translate(clipCenter.posVec[0], clipCenter.posVec[1])
-            canvas.rotate(vectorToCanvasRotation(clipCenter.tanVec))
-            roundedRectPath.reset()
-            roundedRectPath.addRoundRect(
-                clipRect,
-                localClipCornerSize,
-                localClipCornerSize,
-                Path.Direction.CCW,
-            )
-            canvas.clipPath(roundedRectPath)
-
-            canvas.rotate(-vectorToCanvasRotation(clipCenter.tanVec))
-            canvas.translate(-clipCenter.posVec[0], -clipCenter.posVec[1])
-
-            canvas.translate(drawCenter.posVec[0], drawCenter.posVec[1])
-            canvas.rotate(vectorToCanvasRotation(drawCenter.tanVec))
-            canvas.drawRect(patchRect, paint)
-            canvas.drawRoundRect(drawRect, drawCornerSize, drawCornerSize, paint)
-        } else {
-            canvas.translate(drawCenter.posVec[0], drawCenter.posVec[1])
-            canvas.rotate(vectorToCanvasRotation(drawCenter.tanVec))
-            canvas.drawRoundRect(drawRect, drawCornerSize, drawCornerSize, paint)
-        }
-
-        canvas.restore()
+        roundedBlockRenderer.drawRoundedBlock(
+            canvas = canvas,
+            paint = paint,
+            drawCenter = drawCenter,
+            drawWidth = drawWidth,
+            drawHeight = drawHeight,
+            displayedTrackThickness = displayedTrackThickness,
+            drawCornerSize = drawCornerSize,
+            clipCenter = clipCenter,
+            clipWidth = clipWidth,
+            clipHeight = clipHeight,
+            clipCornerSize = clipCornerSize,
+            clipRight = clipRight,
+        )
     }
-
-    private fun vectorToCanvasRotation(vector: FloatArray): Float =
-        Math.toDegrees(atan2(vector[1], vector[0]).toDouble()).toFloat()
 
     private fun transitionAmplitudeTo(target: Float, onFinished: (() -> Unit)? = null) {
         val clampedTarget = MathUtils.clamp(target, 0f, 1f)
@@ -908,7 +758,11 @@ constructor(
 
         val springAnimation =
             SpringAnimation(FloatValueHolder(currentAmplitudeFraction)).apply {
-                spring = resolveWaveTransitionSpring(clampedTarget)
+                spring =
+                    WaveMotionUtils.resolveWaveTransitionSpring(
+                        context = context,
+                        animateOn = clampedTarget > currentAmplitudeFraction,
+                    )
                 setStartValue(currentAmplitudeFraction)
                 setMinimumVisibleChange(MIN_SPRING_VISIBLE_CHANGE)
                 addUpdateListener { _, value, _ ->
@@ -1015,23 +869,6 @@ constructor(
         lastPhaseFrameNanos = 0L
     }
 
-    private fun resolveWaveTransitionSpring(target: Float): SpringForce {
-        val animateOn = target > currentAmplitudeFraction
-        val attr =
-            if (animateOn) {
-                MR.attr.motionSpringFastEffects
-            } else {
-                MR.attr.motionSpringDefaultEffects
-            }
-        val defaultStyle =
-            if (animateOn) {
-                MR.style.Motion_Material3_Spring_Standard_Fast_Effects
-            } else {
-                MR.style.Motion_Material3_Spring_Standard_Default_Effects
-            }
-        return MotionUtils.resolveThemeSpringForce(context, attr, defaultStyle)
-    }
-
     private fun resolveInnerCornerRadius(linearAttrs: TypedArray): Float {
         val typedValue =
             linearAttrs.peekValue(MR.styleable.LinearProgressIndicator_trackInnerCornerRadius)
@@ -1072,32 +909,7 @@ constructor(
         }
     }
 
-    private data class PathPoint(
-        val posVec: FloatArray = floatArrayOf(0f, 0f),
-        val tanVec: FloatArray = floatArrayOf(1f, 0f),
-    ) {
-        fun reset() {
-            posVec[0] = 0f
-            posVec[1] = 0f
-            tanVec[0] = 1f
-            tanVec[1] = 0f
-        }
-
-        fun translate(dx: Float, dy: Float) {
-            posVec[0] += dx
-            posVec[1] += dy
-        }
-
-        fun scale(sx: Float, sy: Float) {
-            posVec[0] *= sx
-            posVec[1] *= sy
-            tanVec[0] *= sx
-            tanVec[1] *= sy
-        }
-    }
-
     private companion object {
-        const val WAVE_SMOOTHNESS = 0.48f
         const val MIN_SPRING_VISIBLE_CHANGE = 0.001f
         const val MIN_PHASE_FRACTION = 0.0001f
         const val EPSILON = 0.0001f
