@@ -331,54 +331,34 @@
         <item name="android:paddingBottom">@dimen/spacing_small</item>
     </style>
 
-    <style name="Widget.Auxio.Button.Icon.Small.PlayPause" parent="Widget.Auxio.Button.Icon.Small">
-        <item name="shapeAppearanceOverlay">
-            @style/ShapeAppearanceOverlay.Material3.FloatingActionButton
-        </item>
-        <item name="materialThemeOverlay">@style/ThemeOverlay.Auxio.IconButton.PlayPause</item>
-    </style>
-
-
-    <style name="Widget.Auxio.Button.Icon.Huge" parent="Widget.Material3.Button.IconButton">
-        <item name="iconSize">@dimen/size_icon_large</item>
-        <item name="android:minWidth">@dimen/size_touchable_medium</item>
-        <item name="android:minHeight">@dimen/size_touchable_medium</item>
-        <item name="android:insetTop">0dp</item>
-        <item name="android:insetBottom">0dp</item>
-        <item name="android:insetLeft">0dp</item>
-        <item name="android:insetRight">0dp</item>
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">8dp</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="materialThemeOverlay">@style/ThemeOverlay.Auxio.IconButton.Palette.Secondary</item>
-    </style>
 
     <style name="ThemeOverlay.Auxio.IconButton.Palette.Secondary" parent="">
         <item name="colorContainer">?attr/colorSecondaryContainer</item>
         <item name="colorOnContainer">?attr/colorOnSecondaryContainer</item>
     </style>
 
-    <style name="Widget.Auxio.Button.PlayPause" parent="Widget.Material3.Button.IconButton.Filled.Tonal">
-        <item name="android:minWidth">@dimen/size_touchable_huge</item>
-        <item name="android:minHeight">@dimen/size_touchable_huge</item>
-        <item name="iconSize">@dimen/size_icon_huge</item>
-        <item name="android:insetTop">0dp</item>
-        <item name="android:insetBottom">0dp</item>
-        <item name="android:insetLeft">0dp</item>
-        <item name="android:insetRight">0dp</item>
-        <item name="android:paddingStart">@dimen/spacing_medium</item>
-        <item name="android:paddingEnd">@dimen/spacing_medium</item>
-        <item name="android:paddingTop">@dimen/spacing_medium</item>
-        <item name="android:paddingBottom">@dimen/spacing_medium</item>
-        <item name="shapeAppearanceOverlay">
-            @style/ShapeAppearanceOverlay.Material3.FloatingActionButton
-        </item>
-        <item name="materialThemeOverlay">@style/ThemeOverlay.Auxio.IconButton.PlayPause</item>
+    <style name="Widget.Auxio.Button.PlayPause" parent="Widget.Material3Expressive.Button.IconButton">
+        <item name="android:checkable">true</item>
     </style>
 
-    <style name="ThemeOverlay.Auxio.IconButton.PlayPause" parent="">
-        <item name="colorContainer">?attr/colorSecondary</item>
-        <item name="colorOnContainer">?attr/colorOnSecondary</item>
+    <style name="Widget.Auxio.Button.PlayPause.Secondary" parent="Widget.Material3Expressive.Button.IconButton">
+        <item name="backgroundTint">?attr/colorSecondary</item>
+        <item name="iconTint">?attr/colorOnSecondary</item>
+        <item name="android:checkable">true</item>
+    </style>
+
+    <style name="Widget.Auxio.Button.Playback.More" parent="Widget.Auxio.Button.Icon.Base" />
+
+    <style name="Widget.Auxio.Button.Playback.Toggle" parent="Widget.Material3Expressive.Button.IconButton.Outlined">
+        <item name="android:checkable">true</item>
+        <item name="iconTint">@color/sel_checkable_icon</item>
+        <item name="strokeColor">@color/sel_checkable_outline</item>
+        <item name="backgroundTint">?attr/colorSurface</item>
+    </style>
+
+    <style name="Widget.Auxio.Button.Playback.Skip" parent="Widget.Material3Expressive.Button.IconButton.Tonal" />
+
+    <style name="Widget.Auxio.Button.Playback.PlayPause" parent="Widget.Material3Expressive.Button.IconButton.Tonal">
+        <item name="android:checkable">true</item>
     </style>
 </resources>

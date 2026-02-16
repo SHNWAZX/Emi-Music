@@ -133,8 +133,8 @@ class PlaybackBarFragment : ViewBindingFragment<FragmentPlaybackBarBinding>() {
                     if (tag != actionMode) {
                         setIconResource(R.drawable.ic_skip_next_24)
                         contentDescription = getString(R.string.desc_skip_next)
-                        iconTint = context.getAttrColorCompat(MR.attr.colorOnSurfaceVariant)
                         setOnClickListener { playbackModel.next() }
+                        isChecked = false
                         tag = actionMode
                     }
                 }
@@ -144,12 +144,11 @@ class PlaybackBarFragment : ViewBindingFragment<FragmentPlaybackBarBinding>() {
                 binding.playbackSecondaryAction.apply {
                     if (tag != actionMode) {
                         contentDescription = getString(R.string.desc_change_repeat)
-                        iconTint = context.getColorCompat(R.color.sel_activatable_icon)
                         setOnClickListener { playbackModel.toggleRepeatMode() }
                         tag = actionMode
                     }
                     setIconResource(repeatMode.icon)
-                    isActivated = repeatMode != RepeatMode.NONE
+                    isChecked = repeatMode != RepeatMode.NONE
                 }
             }
             ActionMode.SHUFFLE -> {
@@ -158,11 +157,10 @@ class PlaybackBarFragment : ViewBindingFragment<FragmentPlaybackBarBinding>() {
                     if (tag != actionMode) {
                         setIconResource(R.drawable.sel_shuffle_state_24)
                         contentDescription = getString(R.string.desc_shuffle)
-                        iconTint = context.getColorCompat(R.color.sel_activatable_icon)
                         setOnClickListener { playbackModel.toggleShuffled() }
                         tag = actionMode
                     }
-                    isActivated = isShuffled
+                    isChecked = isShuffled
                 }
             }
         }

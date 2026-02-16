@@ -18,6 +18,7 @@
  
 package org.oxycblt.auxio.playback
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.media.audiofx.AudioEffect
@@ -29,6 +30,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updatePadding
+import androidx.dynamicanimation.animation.SpringForce
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.oxycblt.auxio.R
@@ -125,11 +127,22 @@ class PlaybackPanelFragment :
 
         // Set up actions
         // TODO: Add better playback button accessibility
-        binding.playbackRepeat.setOnClickListener { playbackModel.toggleRepeatMode() }
+        binding.playbackRepeat.setOnClickListener {
+            playbackModel.toggleRepeatMode()
+        }
         binding.playbackSkipPrev.setOnClickListener { playbackModel.prev() }
-        binding.playbackPlayPause.setOnClickListener { playbackModel.togglePlaying() }
+        binding.playbackPlayPause.apply {
+            @SuppressLint("RestrictedApi")
+            setCornerSpringForce(SpringForce().apply {
+                stiffness = 700f
+                dampingRatio = 0.9f
+            })
+            setOnClickListener { playbackModel.togglePlaying() }
+        }
         binding.playbackSkipNext.setOnClickListener { playbackModel.next() }
-        binding.playbackShuffle.setOnClickListener { playbackModel.toggleShuffled() }
+        binding.playbackShuffle.setOnClickListener {
+            playbackModel.toggleShuffled()
+        }
         binding.playbackMore?.setOnClickListener {
             playbackModel.song.value?.let {
                 listModel.openMenu(R.menu.playback_song, it, PlaySong.ByItself)
@@ -245,16 +258,17 @@ class PlaybackPanelFragment :
     private fun updateRepeat(repeatMode: RepeatMode) {
         requireBinding().playbackRepeat.apply {
             setIconResource(repeatMode.icon)
-            isActivated = repeatMode != RepeatMode.NONE
+            isChecked = repeatMode != RepeatMode.NONE
         }
     }
 
     private fun updatePlaying(isPlaying: Boolean) {
-        requireBinding().playbackPlayPause.isActivated = isPlaying
+        requireBinding().playbackPlayPause.isChecked = isPlaying
+        requireBinding().playbackSeekBar?.setWaveEnabled(isPlaying)
     }
 
     private fun updateShuffled(isShuffled: Boolean) {
-        requireBinding().playbackShuffle.isActivated = isShuffled
+        requireBinding().playbackShuffle.isChecked = isShuffled
     }
 
     private fun navigateToCurrentSong() {
