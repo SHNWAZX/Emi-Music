@@ -438,7 +438,7 @@
         <item name="android:checkable">true</item>
         <item name="iconTint">@color/sel_checkable_icon</item>
         <item name="strokeColor">@color/sel_checkable_outline</item>
-        <item name="backgroundTint">?attr/colorSurface</item>
+        <item name="backgroundTint">?attr/colorSurfaceContainerLow</item>
     </style>
 
     <style name="Widget.Auxio.Button.Playback.Skip" parent="Widget.Material3Expressive.Button.IconButton.Tonal" />
