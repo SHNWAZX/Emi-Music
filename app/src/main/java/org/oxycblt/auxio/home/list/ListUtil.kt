@@ -31,13 +31,13 @@ import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import androidx.core.text.isDigitsOnly
 import com.google.android.material.R
-import org.oxycblt.auxio.ui.ExpressiveShapes
-import org.oxycblt.auxio.util.getAttrColorCompat
-import org.oxycblt.musikr.tag.Name
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import org.oxycblt.auxio.ui.ExpressiveShapes
+import org.oxycblt.auxio.util.getAttrColorCompat
+import org.oxycblt.musikr.tag.Name
 
 fun Name.thumb() =
     when (this) {

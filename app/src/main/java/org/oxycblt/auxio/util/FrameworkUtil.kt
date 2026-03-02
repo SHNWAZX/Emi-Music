@@ -44,6 +44,7 @@ import androidx.viewbinding.ViewBinding
 import com.google.android.material.appbar.MaterialToolbar
 import java.lang.IllegalArgumentException
 import org.oxycblt.auxio.R
+import org.oxycblt.auxio.ui.ButtonGroupToolbar
 import org.oxycblt.musikr.MusicParent
 import org.oxycblt.musikr.Song
 import timber.log.Timber as L
@@ -114,6 +115,11 @@ val ViewBinding.context: Context
  */
 @SuppressLint("RestrictedApi")
 fun Toolbar.overrideOnOverflowMenuClick(block: (View) -> Unit) {
+    if (this is ButtonGroupToolbar) {
+        // ButtonGroupToolbar manages its own overflow button, delegate directly.
+        overrideOnOverflowMenuClick(block)
+        return
+    }
     for (toolbarChild in children) {
         if (toolbarChild is ActionMenuView) {
             for (menuChild in toolbarChild.children) {

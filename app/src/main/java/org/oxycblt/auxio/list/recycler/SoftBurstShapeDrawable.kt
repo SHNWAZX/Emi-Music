@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+ 
 package org.oxycblt.auxio.list.recycler
 
 import android.content.Context
@@ -29,12 +29,12 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
-import org.oxycblt.auxio.ui.ExpressiveShapes
 import com.google.android.material.R as MR
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import org.oxycblt.auxio.ui.ExpressiveShapes
 import org.oxycblt.auxio.util.getAttrColorCompat
 
 /**
