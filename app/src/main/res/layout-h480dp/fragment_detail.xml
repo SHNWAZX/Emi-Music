@@ -189,7 +189,7 @@
 
                 </com.google.android.material.appbar.MaterialToolbar>
 
-                <com.google.android.material.appbar.MaterialToolbar
+                <org.oxycblt.auxio.ui.ButtonGroupToolbar
                     android:id="@+id/detail_selection_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -198,7 +198,7 @@
                     app:menu="@menu/toolbar_selection"
                     app:navigationIcon="@drawable/ic_close_24" />
 
-                <com.google.android.material.appbar.MaterialToolbar
+                <org.oxycblt.auxio.ui.ButtonGroupToolbar
                     android:id="@+id/detail_edit_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
