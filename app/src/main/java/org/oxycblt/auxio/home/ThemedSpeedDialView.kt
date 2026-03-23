@@ -19,14 +19,14 @@
 package org.oxycblt.auxio.home
 
 import android.animation.ArgbEvaluator
+import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Canvas
 import android.graphics.ColorFilter
 import android.graphics.PixelFormat
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.content.Context
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -156,12 +156,16 @@ class ThemedSpeedDialView : SpeedDialView {
                 startColor =
                     if (isOpen) mainFabClosedBackgroundColor else mainFabOpenedBackgroundColor,
                 endColor = targetBackgroundTint,
-            ) { mainFab.backgroundTintList = ColorStateList.valueOf(it) }
+            ) {
+                mainFab.backgroundTintList = ColorStateList.valueOf(it)
+            }
         val imageTintAnimation =
             createColorSpringAnimation(
                 startColor = if (isOpen) mainFabClosedIconColor else mainFabOpenedIconColor,
                 endColor = targetImageTint,
-            ) { mainFab.imageTintList = ColorStateList.valueOf(it) }
+            ) {
+                mainFab.imageTintList = ColorStateList.valueOf(it)
+            }
         val rotationAnimation =
             createSpringAnimation(
                 startValue = mainFabDrawable.rotationDegrees,
@@ -169,7 +173,9 @@ class ThemedSpeedDialView : SpeedDialView {
                 springTemplate = mainFabSpatialSpring,
                 minimumVisibleChange = MAIN_FAB_ROTATION_MIN_VISIBLE_CHANGE,
                 dampingRatioOverride = MAIN_FAB_ROTATION_DAMPING_RATIO_OVERRIDE,
-            ) { mainFabDrawable.rotationDegrees = it }
+            ) {
+                mainFabDrawable.rotationDegrees = it
+            }
 
         return MainFabAnimation(
             listOf(backgroundTintAnimation, imageTintAnimation, rotationAnimation)
@@ -212,9 +218,7 @@ class ThemedSpeedDialView : SpeedDialView {
             setStartValue(startValue)
             setMinimumVisibleChange(minimumVisibleChange)
             addUpdateListener { _, value, _ -> update(value) }
-            addEndListener { _, canceled, value, _ ->
-                update(if (canceled) value else finalValue)
-            }
+            addEndListener { _, canceled, value, _ -> update(if (canceled) value else finalValue) }
         }
 
     override fun onAttachedToWindow() {
@@ -331,8 +335,7 @@ class ThemedSpeedDialView : SpeedDialView {
         innerChangeListener = listener
     }
 
-    @Parcelize
-    private class State(val superState: Parcelable?, val isOpen: Boolean) : Parcelable
+    @Parcelize private class State(val superState: Parcelable?, val isOpen: Boolean) : Parcelable
 
     private class MainFabAnimation(
         private val animations: List<SpringAnimation>,
@@ -373,9 +376,7 @@ class ThemedSpeedDialView : SpeedDialView {
     }
 }
 
-private class RotatingDrawable(
-    drawable: Drawable,
-) : Drawable(), Drawable.Callback {
+private class RotatingDrawable(drawable: Drawable) : Drawable(), Drawable.Callback {
     private var wrappedDrawable = drawable
 
     var rotationDegrees = 0f

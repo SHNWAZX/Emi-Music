@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2026 Auxio Project
- * ButtonGroupToolbar.kt is part of Auxio.
+ * AuxioToolbar.kt is part of Auxio.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+ 
 package org.oxycblt.auxio.ui
 
 import android.annotation.SuppressLint
@@ -45,7 +45,6 @@ import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
 import com.google.android.material.R as MR
 import org.oxycblt.auxio.R
@@ -54,7 +53,8 @@ import org.oxycblt.auxio.databinding.ViewToolbarBinding
 /**
  * A compound toolbar view that owns its entire layout instead of piggybacking on AppCompat's
  * internal Toolbar structure. It preserves the small API surface Auxio actually uses while
- * rendering action items as an M3 Expressive [com.google.android.material.button.MaterialButtonGroup].
+ * rendering action items as an M3 Expressive
+ * [com.google.android.material.button.MaterialButtonGroup].
  */
 class AuxioToolbar
 @JvmOverloads
@@ -76,6 +76,7 @@ constructor(
     private var _binding: ViewToolbarBinding? = null
     private val binding: ViewToolbarBinding
         get() = checkNotNull(_binding) { "Toolbar binding was not initialized" }
+
     private val actionButtons = mutableMapOf<Int, RippleFixMaterialButton>()
     @SuppressLint("RestrictedApi") private var menuBuilder = MenuBuilder(context)
 
@@ -113,7 +114,10 @@ constructor(
         binding.toolbarSubtitle.isVisible = !subtitleText.isNullOrEmpty()
 
         val titleTextAppearance =
-            toolbarAttrs.getResourceId(androidx.appcompat.R.styleable.Toolbar_titleTextAppearance, 0)
+            toolbarAttrs.getResourceId(
+                androidx.appcompat.R.styleable.Toolbar_titleTextAppearance,
+                0,
+            )
         if (titleTextAppearance != 0) {
             setTitleTextAppearance(titleTextAppearance)
         }
@@ -134,9 +138,7 @@ constructor(
         }
 
         val subtitleTextColor =
-            toolbarAttrs.getColorStateList(
-                androidx.appcompat.R.styleable.Toolbar_subtitleTextColor
-            )
+            toolbarAttrs.getColorStateList(androidx.appcompat.R.styleable.Toolbar_subtitleTextColor)
         if (subtitleTextColor != null) {
             setSubtitleTextColor(subtitleTextColor)
         }
@@ -147,9 +149,13 @@ constructor(
             materialToolbarAttrs.getBoolean(MR.styleable.MaterialToolbar_subtitleCentered, false)
         updateTextGravity()
 
-        setNavigationIcon(toolbarAttrs.getDrawable(androidx.appcompat.R.styleable.Toolbar_navigationIcon))
+        setNavigationIcon(
+            toolbarAttrs.getDrawable(androidx.appcompat.R.styleable.Toolbar_navigationIcon)
+        )
         setNavigationContentDescription(
-            toolbarAttrs.getText(androidx.appcompat.R.styleable.Toolbar_navigationContentDescription)
+            toolbarAttrs.getText(
+                androidx.appcompat.R.styleable.Toolbar_navigationContentDescription
+            )
         )
 
         val menuResId = toolbarAttrs.getResourceId(androidx.appcompat.R.styleable.Toolbar_menu, 0)
@@ -233,9 +239,7 @@ constructor(
     }
 
     fun setNavigationIcon(@DrawableRes resId: Int) {
-        setNavigationIcon(
-            if (resId != 0) AppCompatResources.getDrawable(context, resId) else null
-        )
+        setNavigationIcon(if (resId != 0) AppCompatResources.getDrawable(context, resId) else null)
     }
 
     fun setNavigationIcon(icon: Drawable?) {
@@ -310,7 +314,9 @@ constructor(
 
     private fun updateTextGravity() {
         binding.toolbarTitle.apply {
-            gravity = if (titleCentered) android.view.Gravity.CENTER_HORIZONTAL else android.view.Gravity.START
+            gravity =
+                if (titleCentered) android.view.Gravity.CENTER_HORIZONTAL
+                else android.view.Gravity.START
             textAlignment =
                 if (titleCentered) {
                     View.TEXT_ALIGNMENT_CENTER
@@ -320,7 +326,8 @@ constructor(
         }
         binding.toolbarSubtitle.apply {
             gravity =
-                if (subtitleCentered) android.view.Gravity.CENTER_HORIZONTAL else android.view.Gravity.START
+                if (subtitleCentered) android.view.Gravity.CENTER_HORIZONTAL
+                else android.view.Gravity.START
             textAlignment =
                 if (subtitleCentered) {
                     View.TEXT_ALIGNMENT_CENTER
@@ -333,7 +340,8 @@ constructor(
     private fun updateCenterContentVisibility() {
         val hasCustomContent =
             binding.toolbarContentFrame.children.any { it !== binding.toolbarTitleContainer }
-        val showBuiltInTitle = !hasCustomContent && (!titleText.isNullOrEmpty() || !subtitleText.isNullOrEmpty())
+        val showBuiltInTitle =
+            !hasCustomContent && (!titleText.isNullOrEmpty() || !subtitleText.isNullOrEmpty())
         binding.toolbarTitleContainer.isVisible = showBuiltInTitle
     }
 
@@ -372,24 +380,25 @@ constructor(
     private fun createActionButton(item: MenuItemImpl): RippleFixMaterialButton? {
         val button =
             RippleFixMaterialButton(
-                createActionButtonContext(item.itemId),
-                null,
-                MR.attr.materialIconButtonStyle,
-            ).apply {
-                configureIconButton(this)
-                id = item.itemId
-                icon = item.icon
-                contentDescription = item.title
-                isEnabled = item.isEnabled
-                TooltipCompat.setTooltipText(this, item.title)
-                setOnClickListener { view ->
-                    if (item.hasSubMenu()) {
-                        showPopupMenu(view, item.subMenu)
-                    } else {
-                        menuItemClickListener?.onMenuItemClick(item)
+                    createActionButtonContext(item.itemId),
+                    null,
+                    MR.attr.materialIconButtonStyle,
+                )
+                .apply {
+                    configureIconButton(this)
+                    id = item.itemId
+                    icon = item.icon
+                    contentDescription = item.title
+                    isEnabled = item.isEnabled
+                    TooltipCompat.setTooltipText(this, item.title)
+                    setOnClickListener { view ->
+                        if (item.hasSubMenu()) {
+                            showPopupMenu(view, item.subMenu)
+                        } else {
+                            menuItemClickListener?.onMenuItemClick(item)
+                        }
                     }
                 }
-            }
 
         return button
     }
@@ -438,7 +447,8 @@ constructor(
         }
 
         popup.setOnMenuItemClickListener { clickedItem ->
-            val originalItem = originalItems[clickedItem.itemId] ?: return@setOnMenuItemClickListener false
+            val originalItem =
+                originalItems[clickedItem.itemId] ?: return@setOnMenuItemClickListener false
             if (originalItem.hasSubMenu()) {
                 showPopupMenu(anchor, originalItem.subMenu)
                 true

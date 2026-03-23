@@ -18,7 +18,6 @@
  
 package org.oxycblt.auxio.util
 
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -28,15 +27,11 @@ import android.os.Build
 import android.view.View
 import android.view.WindowInsets
 import androidx.annotation.RequiresApi
-import androidx.appcompat.view.menu.ActionMenuItemView
-import androidx.appcompat.widget.ActionMenuView
 import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
-import androidx.core.view.children
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.recyclerview.widget.GridLayoutManager

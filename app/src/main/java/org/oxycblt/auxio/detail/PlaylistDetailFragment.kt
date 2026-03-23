@@ -48,7 +48,6 @@ import org.oxycblt.auxio.util.getPlural
 import org.oxycblt.auxio.util.navigateSafe
 import org.oxycblt.auxio.util.showToast
 import org.oxycblt.auxio.util.unlikelyToBeNull
-import org.oxycblt.musikr.Genre
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.MusicParent
 import org.oxycblt.musikr.Playlist
@@ -279,10 +278,12 @@ class PlaylistDetailFragment :
 
         if (editedPlaylist != null) {
             L.d("Updating save button state")
-            requireBinding().detailEditToolbar.setMenuItemEnabled(
-                R.id.action_save,
-                editedPlaylist != detailModel.currentPlaylist.value?.songs,
-            )
+            requireBinding()
+                .detailEditToolbar
+                .setMenuItemEnabled(
+                    R.id.action_save,
+                    editedPlaylist != detailModel.currentPlaylist.value?.songs,
+                )
         }
 
         updateMultiToolbar()

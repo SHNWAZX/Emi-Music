@@ -41,12 +41,8 @@ import org.oxycblt.auxio.music.MusicViewModel
 import org.oxycblt.auxio.playback.PlaybackViewModel
 import org.oxycblt.auxio.util.getDimenPixels
 import org.oxycblt.auxio.util.setFullWidthLookup
-import org.oxycblt.musikr.Album
-import org.oxycblt.musikr.Artist
-import org.oxycblt.musikr.Genre
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.MusicParent
-import org.oxycblt.musikr.Playlist
 
 abstract class DetailFragment<P : MusicParent, C : Music> :
     ListFragment<C, FragmentDetailBinding>(),
@@ -128,7 +124,10 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
 
         val inRatio = max(ratio - 0.5f, 0f) * 2
         animateToolbarView(binding.detailNormalToolbar.getTitleContainer(), inRatio)
-        animateToolbarActionButton(binding.detailNormalToolbar.getMenuButton(R.id.action_play), inRatio)
+        animateToolbarActionButton(
+            binding.detailNormalToolbar.getMenuButton(R.id.action_play),
+            inRatio,
+        )
         animateToolbarActionButton(
             binding.detailNormalToolbar.getMenuButton(R.id.action_shuffle),
             inRatio,

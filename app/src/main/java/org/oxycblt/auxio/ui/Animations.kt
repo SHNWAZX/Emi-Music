@@ -117,16 +117,16 @@ private object MotionSpringTokens {
             MR.attr.motionSpringFastEffects,
             MR.style.Motion_Material3_Spring_Standard_Fast_Effects,
         )
-//    val DEFAULT_EFFECTS =
-//        SpringToken(
-//            MR.attr.motionSpringDefaultEffects,
-//            MR.style.Motion_Material3_Spring_Standard_Default_Effects,
-//        )
-//    val SLOW_EFFECTS =
-//        SpringToken(
-//            MR.attr.motionSpringSlowEffects,
-//            MR.style.Motion_Material3_Spring_Standard_Slow_Effects,
-//        )
+    //    val DEFAULT_EFFECTS =
+    //        SpringToken(
+    //            MR.attr.motionSpringDefaultEffects,
+    //            MR.style.Motion_Material3_Spring_Standard_Default_Effects,
+    //        )
+    //    val SLOW_EFFECTS =
+    //        SpringToken(
+    //            MR.attr.motionSpringSlowEffects,
+    //            MR.style.Motion_Material3_Spring_Standard_Slow_Effects,
+    //        )
     val FAST_SPATIAL =
         SpringToken(
             MR.attr.motionSpringFastSpatial,
@@ -137,11 +137,11 @@ private object MotionSpringTokens {
             MR.attr.motionSpringDefaultSpatial,
             MR.style.Motion_Material3_Spring_Standard_Default_Spatial,
         )
-//    val SLOW_SPATIAL =
-//        SpringToken(
-//            MR.attr.motionSpringSlowSpatial,
-//            MR.style.Motion_Material3_Spring_Standard_Slow_Spatial,
-//        )
+    //    val SLOW_SPATIAL =
+    //        SpringToken(
+    //            MR.attr.motionSpringSlowSpatial,
+    //            MR.style.Motion_Material3_Spring_Standard_Slow_Spatial,
+    //        )
 }
 
 private class MotionSpring(
@@ -209,18 +209,10 @@ private constructor(
 ) {
     private val alphaOutSpring = MotionSpring(context, alphaOutToken)
     private val scaleOutSpring =
-        MotionSpring(
-            context,
-            scaleOutToken,
-            dampingRatioOverride = scaleOutDampingRatioOverride,
-        )
+        MotionSpring(context, scaleOutToken, dampingRatioOverride = scaleOutDampingRatioOverride)
     private val alphaInSpring = MotionSpring(context, alphaInToken)
     private val scaleInSpring =
-        MotionSpring(
-            context,
-            scaleInToken,
-            dampingRatioOverride = scaleInDampingRatioOverride,
-        )
+        MotionSpring(context, scaleInToken, dampingRatioOverride = scaleInDampingRatioOverride)
 
     fun jumpToFadeOut(view: View) {
         view.apply {
