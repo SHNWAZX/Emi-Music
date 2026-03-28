@@ -98,6 +98,14 @@ private fun isUnderImpl(
 val View.isRtl: Boolean
     get() = layoutDirection == View.LAYOUT_DIRECTION_RTL
 
+/** A single scale value **assuming that the View is always center-scaled** */
+var View.scale: Float
+    get() = scaleX
+    set(it) {
+        scaleX = it
+        scaleY = it
+    }
+
 /** Get a [Context] from a [ViewBinding]'s root [View]. */
 val ViewBinding.context: Context
     get() = root.context

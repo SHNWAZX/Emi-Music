@@ -40,6 +40,7 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.isEmpty
 import androidx.core.view.updateMarginsRelative
 import androidx.core.widget.ImageViewCompat
+import androidx.dynamicanimation.animation.SpringAnimation
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.request.ImageRequest
@@ -60,8 +61,8 @@ import org.oxycblt.auxio.image.coil.RoundedRectTransformation
 import org.oxycblt.auxio.image.coil.SmatteringCoverCollection
 import org.oxycblt.auxio.image.coil.SquareCropTransformation
 import org.oxycblt.auxio.image.coil.StackCoverCollection
-import org.oxycblt.auxio.ui.MaterialFader
-import org.oxycblt.auxio.ui.MotionHandle
+import org.oxycblt.auxio.ui.Effect
+import org.oxycblt.auxio.ui.Spatial
 import org.oxycblt.auxio.ui.UISettings
 import org.oxycblt.auxio.util.getAttrColorCompat
 import org.oxycblt.auxio.util.getColorCompat
@@ -104,8 +105,9 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     private val selectionBadge: ImageView?
     private val iconSize: Int?
 
-    private val fader = MaterialFader.new(context)
-    private var fadeAnimator: MotionHandle? = null
+    private val checkScaleSpring = Spatial.FAST
+    private val checkAlphaSpring = Effect.FAST
+    private var fadeAnimators: List<SpringAnimation>? = null
     private val indicatorMatrix = Matrix()
     private val indicatorMatrixSrc = RectF()
     private val indicatorMatrixDst = RectF()
@@ -340,10 +342,17 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     }
 
     private fun invalidateSelectionIndicatorAlpha(selectionBadge: ImageView) {
-        fadeAnimator?.cancel()
-        fadeAnimator =
-            (if (isActivated) fader.fadeIn(selectionBadge) else fader.fadeOut(selectionBadge))
-                .also { it.start() }
+        fadeAnimators?.forEach { it.cancel() }
+        val scaleAnim: SpringAnimation
+        val alphaAnim: SpringAnimation
+        if (isActivated) {
+            scaleAnim = checkScaleSpring.scale(selectionBadge, 1.0f)
+            alphaAnim = checkAlphaSpring.alpha(selectionBadge, 1.0f)
+        } else {
+            scaleAnim = checkScaleSpring.scale(selectionBadge, 0.9f)
+            alphaAnim = checkAlphaSpring.alpha(selectionBadge, 0.0f)
+        }
+        fadeAnimators = listOf(scaleAnim, alphaAnim)
     }
 
     /**

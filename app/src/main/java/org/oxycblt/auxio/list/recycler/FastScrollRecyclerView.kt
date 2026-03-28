@@ -60,15 +60,16 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import org.oxycblt.auxio.R
+import org.oxycblt.auxio.ui.Effect
 import org.oxycblt.auxio.ui.ExpressiveShapes
-import org.oxycblt.auxio.ui.MaterialSlider
-import org.oxycblt.auxio.ui.MotionHandle
+import org.oxycblt.auxio.ui.Spatial
 import org.oxycblt.auxio.util.getAttrColorCompat
 import org.oxycblt.auxio.util.getAttrResourceId
 import org.oxycblt.auxio.util.getDimenPixels
 import org.oxycblt.auxio.util.inflater
 import org.oxycblt.auxio.util.isRtl
 import org.oxycblt.auxio.util.isUnder
+import org.oxycblt.auxio.util.scale
 import org.oxycblt.auxio.util.systemBarInsetsCompat
 
 /**
@@ -107,16 +108,21 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     // Thumb
     private val thumbWidth = context.getDimenPixels(R.dimen.spacing_mid_medium)
     private val thumbHeight = context.getDimenPixels(R.dimen.size_touchable_medium)
-    private val thumbSlider = MaterialSlider.small(context, thumbWidth)
-    private var thumbAnimator: MotionHandle? = null
+    private var thumbAnimator: SpringAnimation? = null
 
     @SuppressLint("InflateParams")
     private val thumbView =
         context.inflater.inflate(R.layout.view_scroll_thumb, null).apply {
-            thumbSlider.jumpOut(this)
+            translationX = thumbWidth.toFloat()
         }
     private val thumbPadding = Rect(0, 0, 0, 0)
     private var thumbOffset = 0
+
+    private val thumbTranslateInSpring = Spatial.DEFAULT
+    private val thumbTranslateOutSpring = Spatial.FAST
+
+    private val popupScaleSpring = Spatial.DEFAULT
+    private val popupAlphaSpring = Effect.DEFAULT
 
     private var showingThumb = false
     private val hideThumbRunnable = Runnable {
@@ -186,6 +192,8 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
                     marginEnd = context.getDimenPixels(R.dimen.size_touchable_small)
                     gravity = Gravity.CENTER_HORIZONTAL or Gravity.TOP
                 }
+            scale = 0.5f
+            alpha = 0.0f
         }
     private val popupTextStaggerDelayMillis =
         MotionUtils.resolveThemeDuration(context, MR.attr.motionDurationShort2, 100).toLong()
@@ -207,7 +215,8 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     private var popupTextAlphaAnimation: SpringAnimation? = null
     private val popupTextRevealRunnable = Runnable {
         if (showingPopup) {
-            animatePopupTextIn()
+            popupShapeScaleAnimation?.cancel()
+            popupShapeScaleAnimation = popupScaleSpring.scale(popupView, 0f)
         }
     }
     private var showingPopup = false
@@ -272,7 +281,6 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     init {
         overlay.add(thumbView)
         overlay.add(popupView)
-        jumpOutPopup()
 
         addItemDecoration(
             object : ItemDecoration() {
@@ -543,7 +551,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
 
         showingThumb = true
         thumbAnimator?.cancel()
-        thumbAnimator = thumbSlider.slideIn(thumbView).also { it.start() }
+        thumbAnimator = thumbTranslateInSpring.translateX(thumbView, 0f)
     }
 
     private fun hideThumb() {
@@ -553,7 +561,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
 
         showingThumb = false
         thumbAnimator?.cancel()
-        thumbAnimator = thumbSlider.slideOut(thumbView).also { it.start() }
+        thumbAnimator = thumbTranslateOutSpring.translateX(thumbView, thumbWidth.toFloat())
     }
 
     private fun showPopup() {
@@ -566,9 +574,10 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
 
         showingPopup = true
         resetPopupTextAutoScaleConfig()
-        cancelPopupAnimations()
-        animatePopupShapeIn()
-        popupView.postDelayed(popupTextRevealRunnable, popupTextStaggerDelayMillis)
+        popupShapeScaleAnimation?.cancel()
+        popupShapeAlphaAnimation?.cancel()
+        popupShapeScaleAnimation = popupScaleSpring.scale(popupView, 1f)
+        popupShapeAlphaAnimation = popupAlphaSpring.alpha(popupView, 1f)
     }
 
     private fun hidePopup() {
@@ -577,115 +586,10 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         }
 
         showingPopup = false
-        cancelPopupAnimations()
-        animatePopupTextOut()
-        animatePopupShapeOut()
-    }
-
-    private fun jumpOutPopup() {
-        popupBackgroundDrawable.revealScale = POPUP_SHAPE_HIDDEN_SCALE
-        popupBackgroundDrawable.revealAlpha = 0f
-        popupTextView.alpha = 0f
-        popupTextView.scaleX = POPUP_TEXT_HIDDEN_SCALE
-        popupTextView.scaleY = POPUP_TEXT_HIDDEN_SCALE
-    }
-
-    private fun cancelPopupAnimations() {
-        popupView.removeCallbacks(popupTextRevealRunnable)
         popupShapeScaleAnimation?.cancel()
-        popupShapeScaleAnimation = null
         popupShapeAlphaAnimation?.cancel()
-        popupShapeAlphaAnimation = null
-        popupTextScaleAnimation?.cancel()
-        popupTextScaleAnimation = null
-        popupTextAlphaAnimation?.cancel()
-        popupTextAlphaAnimation = null
-    }
-
-    private fun animatePopupShapeIn() {
-        popupShapeScaleAnimation =
-            springTo(
-                startValue = popupBackgroundDrawable.revealScale,
-                finalValue = 1f,
-                springTemplate = popupSpatialSpring,
-                minimumVisibleChange = 0.001f,
-            ) {
-                popupBackgroundDrawable.revealScale = it
-            }
-        popupShapeAlphaAnimation =
-            springTo(
-                startValue = popupBackgroundDrawable.revealAlpha,
-                finalValue = 1f,
-                springTemplate = popupEffectsSpring,
-                minimumVisibleChange = 1f / 255f,
-            ) {
-                popupBackgroundDrawable.revealAlpha = it
-            }
-    }
-
-    private fun animatePopupShapeOut() {
-        popupShapeScaleAnimation =
-            springTo(
-                startValue = popupBackgroundDrawable.revealScale,
-                finalValue = POPUP_SHAPE_HIDDEN_SCALE,
-                springTemplate = popupSpatialSpring,
-                minimumVisibleChange = 0.001f,
-            ) {
-                popupBackgroundDrawable.revealScale = it
-            }
-        popupShapeAlphaAnimation =
-            springTo(
-                startValue = popupBackgroundDrawable.revealAlpha,
-                finalValue = 0f,
-                springTemplate = popupEffectsSpring,
-                minimumVisibleChange = 1f / 255f,
-            ) {
-                popupBackgroundDrawable.revealAlpha = it
-            }
-    }
-
-    private fun animatePopupTextIn() {
-        popupTextScaleAnimation =
-            springTo(
-                startValue = popupTextView.scaleX,
-                finalValue = 1f,
-                springTemplate = popupSpatialSpring,
-                minimumVisibleChange = 0.001f,
-            ) {
-                popupTextView.scaleX = it
-                popupTextView.scaleY = it
-            }
-        popupTextAlphaAnimation =
-            springTo(
-                startValue = popupTextView.alpha,
-                finalValue = 1f,
-                springTemplate = popupEffectsSpring,
-                minimumVisibleChange = 1f / 255f,
-            ) {
-                popupTextView.alpha = it
-            }
-    }
-
-    private fun animatePopupTextOut() {
-        popupTextScaleAnimation =
-            springTo(
-                startValue = popupTextView.scaleX,
-                finalValue = POPUP_TEXT_HIDDEN_SCALE,
-                springTemplate = popupSpatialSpring,
-                minimumVisibleChange = 0.001f,
-            ) {
-                popupTextView.scaleX = it
-                popupTextView.scaleY = it
-            }
-        popupTextAlphaAnimation =
-            springTo(
-                startValue = popupTextView.alpha,
-                finalValue = 0f,
-                springTemplate = popupEffectsSpring,
-                minimumVisibleChange = 1f / 255f,
-            ) {
-                popupTextView.alpha = it
-            }
+        popupShapeScaleAnimation = popupScaleSpring.scale(popupView, 0.5f)
+        popupShapeAlphaAnimation = popupAlphaSpring.alpha(popupView, 0f)
     }
 
     private fun createPopupTextView(context: Context): MaterialTextView =
@@ -787,13 +691,14 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         finalValue: Float,
         springTemplate: SpringForce,
         minimumVisibleChange: Float,
+        dampingOverride: Float? = null,
         update: (Float) -> Unit,
     ): SpringAnimation {
         val animation =
             SpringAnimation(FloatValueHolder(startValue)).apply {
                 spring =
                     SpringForce().apply {
-                        dampingRatio = springTemplate.dampingRatio
+                        dampingRatio = dampingOverride ?: springTemplate.dampingRatio
                         stiffness = springTemplate.stiffness
                         finalPosition = finalValue
                     }
@@ -877,7 +782,7 @@ private class SoftBurstPopupDrawable(context: Context) : Drawable() {
     private var shapeAlpha = 255
     var revealScale = 1f
         set(value) {
-            val clampedValue = value.coerceIn(0f, 1f)
+            val clampedValue = value.coerceAtLeast(0f)
             if (field == clampedValue) {
                 return
             }
