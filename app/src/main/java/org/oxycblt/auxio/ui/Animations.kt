@@ -139,9 +139,13 @@ class Effect private constructor(@AttrRes val attr: Int, @StyleRes val defaultSt
             spring = springForce
             setStartValue(from)
             setMinimumVisibleChange(1f / 255f)
-            addUpdateListener { _, value, _ -> view.alpha = value }
+            addUpdateListener { _, value, _ ->
+                view.alpha = value
+                view.isInvisible = view.alpha == 0f
+            }
             addEndListener { _, canceled, value, _ ->
-                view.scale = if (!canceled || jumpOnCancellation) to else value
+                view.alpha = if (!canceled || jumpOnCancellation) to else value
+                view.isInvisible = view.alpha == 0f
             }
             animateToFinalPosition(to)
         }

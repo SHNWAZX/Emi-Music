@@ -24,6 +24,7 @@ import android.widget.FrameLayout
 import androidx.annotation.AttrRes
 import androidx.annotation.IdRes
 import androidx.core.view.children
+import androidx.core.view.isInvisible
 import androidx.dynamicanimation.animation.SpringAnimation
 import org.oxycblt.auxio.util.scale
 import timber.log.Timber as L
@@ -46,6 +47,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
             getChildAt(i).apply {
                 scale = 0.9f
                 alpha = 0f
+                isInvisible = true
             }
         }
     }
