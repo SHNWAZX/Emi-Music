@@ -21,23 +21,21 @@ package org.oxycblt.auxio.list.recycler
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.view.isInvisible
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.R as MR
+import com.google.android.material.shape.MaterialShapeDrawable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
 import org.oxycblt.auxio.R
-import org.oxycblt.auxio.list.recycler.MaterialDragCallback.ViewHolder
 import org.oxycblt.auxio.ui.Effect
 import org.oxycblt.auxio.ui.Spatial
 import org.oxycblt.auxio.util.getDimen
-import org.oxycblt.auxio.util.getInteger
+import org.oxycblt.auxio.util.getDimenPixels
 import timber.log.Timber as L
 
 /**
@@ -53,7 +51,7 @@ abstract class MaterialDragCallback : ItemTouchHelper.Callback() {
         val elevationAnim: SpringAnimation,
         val translateZAnim: SpringAnimation,
         val alphaAnim: SpringAnimation,
-        val causedBy: CausedBy
+        val causedBy: CausedBy,
     ) {
         fun cancel() {
             cornerAnim.cancel()
@@ -62,11 +60,12 @@ abstract class MaterialDragCallback : ItemTouchHelper.Callback() {
             alphaAnim.cancel()
         }
     }
+
     enum class CausedBy {
         CLICK,
-        RELEASE
+        RELEASE,
     }
-    private var shouldLift = true
+
     private val itemCornerSpring = Spatial.DEFAULT
     private val itemAlphaSpring = Effect.DEFAULT
     private val itemTranslateZString = Spatial.DEFAULT
@@ -127,19 +126,21 @@ abstract class MaterialDragCallback : ItemTouchHelper.Callback() {
         // this is only done once when the item is initially picked up.
         if (isCurrentlyActive && actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
             L.d("Lifting ViewHolder")
-            val bg = holder.background as MaterialShapeDrawable
+            val bg = holder.liftableBackground as MaterialShapeDrawable
             val elevation = recyclerView.context.getDimen(MR.dimen.m3_sys_elevation_level4)
             val cornerSize = recyclerView.context.getDimen(R.dimen.spacing_mid_large)
             val itemAnim = itemAnims[holder.root]
             if (itemAnim?.causedBy != CausedBy.CLICK) {
                 itemAnim?.cancel()
-                itemAnims[holder.root] = AnimBundle(
-                    cornerAnim = itemCornerSpring.corners(holder.root.context, bg, cornerSize),
-                    elevationAnim = itemCornerSpring.elevation(holder.root.context, bg, elevation),
-                    translateZAnim = itemTranslateZString.translateZ(holder.root, elevation),
-                    alphaAnim = itemAlphaSpring.alpha(holder.root.context, bg, 255),
-                    causedBy = CausedBy.CLICK
-                )
+                itemAnims[holder.root] =
+                    AnimBundle(
+                        cornerAnim = itemCornerSpring.corners(holder.root.context, bg, cornerSize),
+                        elevationAnim =
+                            itemCornerSpring.elevation(holder.root.context, bg, elevation),
+                        translateZAnim = itemTranslateZString.translateZ(holder.root, elevation),
+                        alphaAnim = itemAlphaSpring.alpha(holder.root.context, bg, 255),
+                        causedBy = CausedBy.CLICK,
+                    )
             }
         }
 
@@ -158,6 +159,11 @@ abstract class MaterialDragCallback : ItemTouchHelper.Callback() {
         // this ourselves.
         holder.body.translationX = dX
         holder.root.translationY = dY
+        val cornerSize = recyclerView.context.getDimen(R.dimen.spacing_mid_large)
+        val threshold = recyclerView.context.getDimenPixels(R.dimen.size_touchable_large)
+        val bg = holder.roundableBackground as MaterialShapeDrawable
+        val progressiveCornerSize = (cornerSize * abs(dX) / threshold).coerceAtMost(cornerSize)
+        bg.setCornerSize(progressiveCornerSize)
     }
 
     final override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
@@ -168,21 +174,20 @@ abstract class MaterialDragCallback : ItemTouchHelper.Callback() {
         // translationZ is already non-zero.
         if (holder.root.translationZ != 0f) {
             L.d("Lifting ViewHolder")
-            val bg = holder.background as MaterialShapeDrawable
+            val bg = holder.liftableBackground as MaterialShapeDrawable
             val itemAnim = itemAnims[holder.root]
             if (itemAnim?.causedBy != CausedBy.RELEASE) {
                 itemAnim?.cancel()
-                itemAnims[holder.root] = AnimBundle(
-                    cornerAnim = itemCornerSpring.corners(holder.root.context, bg, 0f),
-                    elevationAnim = itemCornerSpring.elevation(holder.root.context, bg, 0f),
-                    translateZAnim = itemTranslateZString.translateZ(holder.root, 0f),
-                    alphaAnim = itemAlphaSpring.alpha(holder.root.context, bg, 0),
-                    causedBy = CausedBy.RELEASE
-                )
+                itemAnims[holder.root] =
+                    AnimBundle(
+                        cornerAnim = itemCornerSpring.corners(holder.root.context, bg, 0f),
+                        elevationAnim = itemCornerSpring.elevation(holder.root.context, bg, 0f),
+                        translateZAnim = itemTranslateZString.translateZ(holder.root, 0f),
+                        alphaAnim = itemAlphaSpring.alpha(holder.root.context, bg, 0),
+                        causedBy = CausedBy.RELEASE,
+                    )
             }
         }
-
-        shouldLift = true
 
         // Reset translations. We do not call the default implementation, so we must do
         // this ourselves.
@@ -204,7 +209,9 @@ abstract class MaterialDragCallback : ItemTouchHelper.Callback() {
         /** The scrim view showing the delete icon. Should be behind [body]. */
         val delete: View
         /** The drawable of the [body] background that can be elevated. */
-        val background: Drawable
+        val liftableBackground: Drawable
+        /** The drawable of the [body] background that can be rounded when dragging. */
+        val roundableBackground: Drawable
     }
 
     companion object {

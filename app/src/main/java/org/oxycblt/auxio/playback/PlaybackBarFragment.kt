@@ -30,7 +30,6 @@ import org.oxycblt.auxio.music.resolveNames
 import org.oxycblt.auxio.playback.state.RepeatMode
 import org.oxycblt.auxio.ui.ViewBindingFragment
 import org.oxycblt.auxio.util.collectImmediately
-import org.oxycblt.auxio.util.getDimenPixels
 import org.oxycblt.musikr.Song
 import timber.log.Timber as L
 

@@ -19,6 +19,7 @@
 package org.oxycblt.auxio.detail.list
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.view.View
 import android.view.ViewGroup
@@ -231,22 +232,20 @@ private constructor(private val binding: ItemEditableSongBinding) :
     override val root = binding.root
     override val body = binding.body
     override val delete = binding.background
-    override val background =
+    override val liftableBackground =
         MaterialShapeDrawable.createWithElevationOverlay(binding.root.context).apply {
             fillColor = binding.context.getAttrColorCompat(MR.attr.colorSurfaceContainerHigh)
             alpha = 0
         }
 
+    override val roundableBackground: Drawable
+        get() =
+            MaterialShapeDrawable.createWithElevationOverlay(binding.context).apply {
+                fillColor = binding.context.getAttrColorCompat(MR.attr.colorSurface)
+            }
+
     init {
-        binding.body.background =
-            LayerDrawable(
-                arrayOf(
-                    MaterialShapeDrawable.createWithElevationOverlay(binding.context).apply {
-                        fillColor = binding.context.getAttrColorCompat(MR.attr.colorSurface)
-                    },
-                    background,
-                )
-            )
+        binding.body.background = LayerDrawable(arrayOf(roundableBackground, liftableBackground))
     }
 
     /**

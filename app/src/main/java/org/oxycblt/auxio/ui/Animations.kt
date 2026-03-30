@@ -80,7 +80,12 @@ class Spatial private constructor(@AttrRes val attr: Int, val defaultStyle: Int)
         }
     }
 
-    fun elevation(context: Context, drawable: MaterialShapeDrawable, to: Float, jumpOnCancellation: Boolean = false): SpringAnimation {
+    fun elevation(
+        context: Context,
+        drawable: MaterialShapeDrawable,
+        to: Float,
+        jumpOnCancellation: Boolean = false,
+    ): SpringAnimation {
         val from = drawable.elevation
         val springForce = resolve(context)
         return SpringAnimation(FloatValueHolder(from)).apply {
@@ -95,7 +100,12 @@ class Spatial private constructor(@AttrRes val attr: Int, val defaultStyle: Int)
         }
     }
 
-    fun corners(context: Context, drawable: MaterialShapeDrawable, to: Float, jumpOnCancellation: Boolean = false): SpringAnimation {
+    fun corners(
+        context: Context,
+        drawable: MaterialShapeDrawable,
+        to: Float,
+        jumpOnCancellation: Boolean = false,
+    ): SpringAnimation {
         val from = drawable.topRightCornerResolvedSize
         val springForce = resolve(context)
         return SpringAnimation(FloatValueHolder(from)).apply {
@@ -151,7 +161,12 @@ class Effect private constructor(@AttrRes val attr: Int, @StyleRes val defaultSt
         }
     }
 
-    fun alpha(context: Context, drawable: Drawable, to: Int, jumpOnCancellation: Boolean = false): SpringAnimation {
+    fun alpha(
+        context: Context,
+        drawable: Drawable,
+        to: Int,
+        jumpOnCancellation: Boolean = false,
+    ): SpringAnimation {
         val from = drawable.alpha
         val springForce = resolve(context)
         return SpringAnimation(FloatValueHolder(from.toFloat())).apply {
