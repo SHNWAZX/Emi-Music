@@ -6,7 +6,6 @@ plugins {
     id "androidx.navigation.safeargs.kotlin"
     id "kotlin-parcelize"
     id "dagger.hilt.android.plugin"
-    id "kotlin-kapt"
     id "com.google.devtools.ksp"
     id "org.jetbrains.kotlin.android"
 }
@@ -158,9 +157,9 @@ dependencies {
 
     // Dependency Injection
     implementation "com.google.dagger:dagger:$hilt_version"
-    kapt "com.google.dagger:dagger-compiler:$hilt_version"
+    ksp "com.google.dagger:dagger-compiler:$hilt_version"
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    ksp "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     // Logging
     implementation 'com.jakewharton.timber:timber:5.0.1'

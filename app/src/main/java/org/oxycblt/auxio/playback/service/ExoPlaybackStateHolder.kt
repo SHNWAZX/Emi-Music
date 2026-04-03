@@ -30,8 +30,10 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.decoder.ffmpeg.FfmpegAudioRenderer
+import androidx.media3.exoplayer.BaseRenderer
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.RenderersFactory
+import androidx.media3.exoplayer.audio.DecoderAudioRenderer
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
@@ -656,7 +658,7 @@ class ExoPlaybackStateHolder(
             // Since Auxio is a music player, only specify an audio renderer to save
             // battery/apk size/cache size]
             val audioRenderer = RenderersFactory { handler, _, audioListener, _, _ ->
-                arrayOf(
+                arrayOf<BaseRenderer>(
                     FfmpegAudioRenderer(handler, audioListener, replayGainProcessor),
                     MediaCodecAudioRenderer(
                         context,
