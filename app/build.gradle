@@ -22,6 +22,8 @@ android {
         versionCode 69
 
         minSdk min_sdk
+        // for some reason this is """"deprecated""""" yet my gradle flips out when its not there
+        compileSdk target_sdk
         targetSdk target_sdk
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
