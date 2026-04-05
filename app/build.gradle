@@ -2,12 +2,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id "com.android.application"
-    id "kotlin-android"
     id "androidx.navigation.safeargs.kotlin"
     id "kotlin-parcelize"
     id "dagger.hilt.android.plugin"
     id "com.google.devtools.ksp"
-    id "org.jetbrains.kotlin.android"
 }
 
 android {
@@ -22,7 +20,8 @@ android {
         versionCode 69
 
         minSdk min_sdk
-        // for some reason this is """"deprecated""""" yet my gradle flips out when its not there
+        // randomly flickers between deprecated and required depending on what mood my gradle is in
+        // keep it for safety
         compileSdk target_sdk
         targetSdk target_sdk
 
@@ -31,13 +30,13 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(21)
         }
     }
 
@@ -76,8 +75,9 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_17
-        freeCompilerArgs.add("-Xjvm-default=all")
+        jvmTarget = JvmTarget.JVM_21
+        freeCompilerArgs.add("-jvm-default=enable")
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 }
 
