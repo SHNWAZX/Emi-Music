@@ -47,14 +47,10 @@ import coil3.request.ImageRequest
 import coil3.request.target
 import coil3.request.transformations
 import coil3.util.CoilUtils
-import com.google.android.material.R as MR
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.RelativeCornerSize
 import com.google.android.material.shape.ShapeAppearanceModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import kotlin.math.min
-import kotlin.random.Random
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.image.coil.GalleryCoverCollection
 import org.oxycblt.auxio.image.coil.RoundedRectTransformation
@@ -74,6 +70,10 @@ import org.oxycblt.musikr.Genre
 import org.oxycblt.musikr.Playlist
 import org.oxycblt.musikr.Song
 import org.oxycblt.musikr.covers.CoverCollection
+import javax.inject.Inject
+import kotlin.math.min
+import kotlin.random.Random
+import com.google.android.material.R as MR
 
 /**
  * Auxio's extension of [ImageView] that enables cover art loading and playing indicator and
@@ -112,36 +112,39 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     private val indicatorMatrixSrc = RectF()
     private val indicatorMatrixDst = RectF()
 
-    private val shapeAppearance: ShapeAppearanceModel
-    private val circleShapeAppearance: ShapeAppearanceModel
+    private val squareishShapeAppearance: ShapeAppearanceModel
+    private val circularShapeAppearance: ShapeAppearanceModel
     private var currentShapeAppearance: ShapeAppearanceModel
-    private var circleCropEnabled = false
 
     init {
         // Obtain some StyledImageView attributes to use later when theming the custom view.
         @SuppressLint("CustomViewStyleable")
         val styledAttrs = context.obtainStyledAttributes(attrs, R.styleable.CoverView)
 
-        val shapeAppearanceRes = styledAttrs.getResourceId(R.styleable.CoverView_shapeAppearance, 0)
-        shapeAppearance =
+        val shapeAppearanceRes = styledAttrs.getResourceId(
+            R.styleable.CoverView_shapeAppearance,
+            MR.style.ShapeAppearance_Material3_Corner_Medium
+        )
+        squareishShapeAppearance =
             if (uiSettings.roundMode) {
-                if (shapeAppearanceRes != 0) {
-                    ShapeAppearanceModel.builder(context, shapeAppearanceRes, -1).build()
-                } else {
                     ShapeAppearanceModel.builder(
                             context,
-                            com.google.android.material.R.style
-                                .ShapeAppearance_Material3_Corner_Medium,
+                        shapeAppearanceRes,
                             -1,
                         )
                         .build()
-                }
             } else {
                 ShapeAppearanceModel.builder().build()
             }
-        circleShapeAppearance =
-            ShapeAppearanceModel.builder().setAllCornerSizes(RelativeCornerSize(0.5f)).build()
-        currentShapeAppearance = shapeAppearance
+        circularShapeAppearance =
+            if (uiSettings.roundMode) {
+                ShapeAppearanceModel.builder().setAllCornerSizes(RelativeCornerSize(0.5f)).build()
+            } else {
+                ShapeAppearanceModel.builder().build()
+            }
+        // squarish is always the default for non-bound CoverViews (ex. track numbers)
+        // this will get overriden if artists are bound
+        currentShapeAppearance = squareishShapeAppearance
         iconSize =
             styledAttrs.getDimensionPixelSize(R.styleable.CoverView_iconSize, -1).takeIf {
                 it != -1
@@ -182,6 +185,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
                     imageTintList = context.getAttrColorCompat(MR.attr.colorOnPrimary)
                     setImageResource(R.drawable.ic_check_20)
                     setBackgroundResource(R.drawable.ui_selection_badge_bg)
+                    alpha = 0f
                 }
             } else {
                 null
@@ -198,7 +202,20 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
 
         playbackIndicator?.run { addView(view) }
 
-        applyBackgroundsToChildren()
+        for (child in children) {
+            if (child == selectionBadge) {
+                continue
+            }
+            // configure child views to share the same exact background in all cases
+            child.apply {
+                clipToOutline = this != image
+                background =
+                    MaterialShapeDrawable().apply {
+                        fillColor = context.getColorCompat(R.color.sel_cover_bg)
+                        shapeAppearanceModel = squareishShapeAppearance
+                    }
+            }
+        }
 
         // The selection badge has it's own background we don't want overridden, add it after
         // all other elements.
@@ -222,6 +239,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
 
         // AnimatedVectorDrawable cannot be placed in a StyledDrawable, we must replicate the
         // behavior with a matrix.
+        // FIXME: I think this makes it blurry. Or maybe the animated drawable is blurry itself.
         val playbackIndicator = (playbackIndicator ?: return).view
         val iconSize = iconSize ?: (measuredWidth / 2)
         playbackIndicator.apply {
@@ -293,34 +311,6 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         }
     }
 
-    private fun applyBackgroundsToChildren() {
-
-        // Add backgrounds to each child for visual consistency
-        for (child in children) {
-            if (child == selectionBadge) {
-                continue
-            }
-            child.apply {
-                // If there are rounded corners, we want to make sure view content will be cropped
-                // with it.
-                clipToOutline = this != image
-                background =
-                    MaterialShapeDrawable().apply {
-                        fillColor = context.getColorCompat(R.color.sel_cover_bg)
-                        shapeAppearanceModel = currentShapeAppearance
-                    }
-            }
-        }
-    }
-
-    private fun updateShapeAppearance(useCircleCrop: Boolean) {
-        if (circleCropEnabled == useCircleCrop) {
-            return
-        }
-        circleCropEnabled = useCircleCrop
-        currentShapeAppearance = if (useCircleCrop) circleShapeAppearance else shapeAppearance
-        applyBackgroundsToChildren()
-    }
 
     private fun invalidateRootAlpha() {
         alpha = if (isEnabled || isSelected) 1f else 0.5f
@@ -365,6 +355,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
             { song.cover },
             context.getString(R.string.desc_album_cover, song.album.name),
             R.drawable.ic_album_24,
+            squareishShapeAppearance
         )
 
     /**
@@ -387,6 +378,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
             },
             context.getString(R.string.desc_album_cover, album.name),
             R.drawable.ic_album_24,
+            squareishShapeAppearance
         )
     }
 
@@ -401,19 +393,19 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         // stack of vinyl.
         val uidSeed = artist.uid.toString().hashCode()
         bindImpl(
-            {
+            { cornerBounds ->
                 SmatteringCoverCollection(
                     artist.covers,
-                    coverCollectionCornerRatio(),
-                    coverCollectionFanAngle(uidSeed),
-                    coverCollectionTiltAngle(uidSeed),
-                    coverCollectionZOrder(uidSeed),
-                    coverCollectionBackgroundColor(),
+                    responsiveCornerSize(cornerBounds),
+                    seededFanAngle(uidSeed),
+                    seededTiltAngle(uidSeed),
+                    seededZOrder(uidSeed),
+                    backgroundColor(),
                 )
             },
             context.getString(R.string.desc_artist_image, artist.name),
             R.drawable.ic_artist_24,
-            useCircleCrop = true,
+            circularShapeAppearance
         )
     }
 
@@ -426,16 +418,17 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         // Genres are organized like a "gallery" of various covers that overlap eachother,
         // as if they were framed on a wall.
         bindImpl(
-            {
+            { cornerBounds ->
                 GalleryCoverCollection(
                     genre.covers,
-                    coverCollectionCornerRatio(),
-                    coverCollectionZOrder(genre.uid.toString().hashCode()),
-                    coverCollectionBackgroundColor(),
+                    responsiveCornerSize(cornerBounds),
+                    seededZOrder(genre.uid.toString().hashCode()),
+                    backgroundColor(),
                 )
             },
             context.getString(R.string.desc_genre_image, genre.name),
             R.drawable.ic_genre_24,
+            squareishShapeAppearance
         )
 
     /**
@@ -447,16 +440,17 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         // Playlists are organized in a straight diagonal stack to give the appearance of an
         // "orderly" pile of covers.
         bindImpl(
-            {
+            { cornerBounds ->
                 StackCoverCollection(
                     playlist.covers,
-                    coverCollectionCornerRatio(),
-                    coverCollectionZOrder(playlist.uid.toString().hashCode()),
-                    coverCollectionBackgroundColor(),
+                    responsiveCornerSize(cornerBounds),
+                    seededZOrder(playlist.uid.toString().hashCode()),
+                    backgroundColor(),
                 )
             },
             context.getString(R.string.desc_playlist_image, playlist.name),
             R.drawable.ic_playlist_24,
+            squareishShapeAppearance
         )
 
     /**
@@ -474,56 +468,70 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         uidSeed: Int = songs.hashCode(),
     ) =
         bindImpl(
-            {
+            { cornerBounds ->
                 StackCoverCollection(
                     CoverCollection.from(songs.mapNotNull { it.cover }),
-                    coverCollectionCornerRatio(),
-                    coverCollectionZOrder(uidSeed),
-                    coverCollectionBackgroundColor(),
+                    responsiveCornerSize(cornerBounds),
+                    seededZOrder(uidSeed),
+                    backgroundColor(),
                 )
             },
             desc,
             errorRes,
+            squareishShapeAppearance
         )
 
     private fun bindImpl(
-        cover: () -> Any?,
+        img: (RectF) -> Any?,
         desc: String,
         @DrawableRes errorRes: Int,
-        useCircleCrop: Boolean = false,
-        configure: (ImageRequest.Builder) -> ImageRequest.Builder = { it },
-        deferIfNeeded: Boolean = true,
+        shapeAppearanceModel: ShapeAppearanceModel
     ) {
-        updateShapeAppearance(useCircleCrop)
-        val cornerBounds = resolveCornerBounds()
-        if (deferIfNeeded && cornerBounds == null && (uiSettings.roundMode || useCircleCrop)) {
+        // prep proper shape to use if necessary. be safe and do it now
+        // idk if doing it at layout time will cause issues
+        updateShapeAppearance(shapeAppearanceModel)
+        bindWait(img, desc, errorRes, shapeAppearanceModel)
+    }
+
+    private fun bindWait(
+        img: (RectF) -> Any?,
+        desc: String,
+        @DrawableRes errorRes: Int,
+        shapeAppearanceModel: ShapeAppearanceModel
+    ) {
+        // for some reason randomly corner radii started breaking on menus
+        // fix this by waiting until we are laid out instead
+        val cornerBounds = resolveCurrentBoundsForCorners()
+        if (cornerBounds != null) {
+            bindWithCorners(img, desc, errorRes, cornerBounds, shapeAppearanceModel)
+        } else {
             doOnLayout {
-                bindImpl(
-                    cover = cover,
-                    desc = desc,
-                    errorRes = errorRes,
-                    useCircleCrop = useCircleCrop,
-                    configure = configure,
-                    deferIfNeeded = false,
-                )
+                bindImpl(img, desc, errorRes, shapeAppearanceModel)
             }
-            return
         }
+    }
+
+    private fun bindWithCorners(
+        img: (RectF) -> Any?,
+        desc: String,
+        @DrawableRes errorRes: Int,
+        cornerBounds: RectF,
+        shapeAppearanceModel: ShapeAppearanceModel
+    ) {
         val request =
-            configure(
-                ImageRequest.Builder(context)
-                    .data(cover())
-                    .error(
-                        StyledDrawable(context, context.getDrawableCompat(errorRes), iconSize)
-                            .asImage()
-                    )
-                    .target(image)
-            )
+            ImageRequest.Builder(context)
+                .data(img(cornerBounds))
+                .error(
+                    StyledDrawable(context, context.getDrawableCompat(errorRes), iconSize)
+                        .asImage()
+                )
+                .target(image)
 
         val cornerRadius =
-            cornerBounds?.let { currentShapeAppearance.topLeftCornerSize.getCornerSize(it) } ?: 0f
+            cornerBounds.let { shapeAppearanceModel.topLeftCornerSize.getCornerSize(it) }
         val cornersTransformation = RoundedRectTransformation(cornerRadius)
-        if (useCircleCrop || imageSettings.forceSquareCovers) {
+        val circular = shapeAppearanceModel.topLeftCornerSize is RelativeCornerSize
+        if (circular || imageSettings.forceSquareCovers) {
             request.transformations(SquareCropTransformation.INSTANCE, cornersTransformation)
         } else {
             request.transformations(cornersTransformation)
@@ -535,51 +543,50 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         contentDescription = desc
     }
 
-    private fun coverCollectionCornerRatio(): Float {
+    private fun responsiveCornerSize(cornerBounds: RectF): Float {
         if (!uiSettings.roundMode) {
             return 0f
         }
-        val bounds = resolveCornerBounds() ?: return 0f
-        val cornerRadiusPx = shapeAppearance.topLeftCornerSize.getCornerSize(bounds)
+        val cornerRadiusPx = squareishShapeAppearance.topLeftCornerSize.getCornerSize(cornerBounds)
         if (cornerRadiusPx <= 0f) {
             return 0f
         }
-        val minSize = min(bounds.width(), bounds.height())
+        val minSize = min(cornerBounds.width(), cornerBounds.height())
         if (minSize <= 0f) {
             return 0f
         }
         return cornerRadiusPx / minSize
     }
 
-    private fun coverCollectionZOrder(uidSeed: Int): List<Int> {
+    private fun seededZOrder(uidSeed: Int): List<Int> {
         val order = mutableListOf(0, 1, 2, 3)
         order.shuffle(Random(uidSeed.toLong()))
         return order
     }
 
-    private fun coverCollectionFanAngle(uidSeed: Int): Float {
+    private fun seededFanAngle(uidSeed: Int): Float {
         val random = Random(uidSeed.toLong())
         return random.nextFloat() * 10f + 5f // 5-15 degrees
     }
 
-    private fun coverCollectionTiltAngle(uidSeed: Int): Float {
+    private fun seededTiltAngle(uidSeed: Int): Float {
         val random = Random(uidSeed.toLong())
         return random.nextFloat() * 20f - 10f // -10 to +10 degrees
     }
 
-    private fun coverCollectionBackgroundColor(): Int =
+    private fun backgroundColor(): Int =
         context.getColorCompat(R.color.sel_cover_bg).defaultColor
 
-    private fun resolveCornerBounds(): RectF? {
-        val widthPx = resolveSizePx(width, measuredWidth, layoutParams?.width)
-        val heightPx = resolveSizePx(height, measuredHeight, layoutParams?.height)
+    private fun resolveCurrentBoundsForCorners(): RectF? {
+        val widthPx = firstNonZeroOrNull(width, measuredWidth, layoutParams?.width)
+        val heightPx = firstNonZeroOrNull(height, measuredHeight, layoutParams?.height)
         if (widthPx <= 0 || heightPx <= 0) {
             return null
         }
         return RectF(0f, 0f, widthPx.toFloat(), heightPx.toFloat())
     }
 
-    private fun resolveSizePx(vararg candidates: Int?): Int {
+    private fun firstNonZeroOrNull(vararg candidates: Int?): Int {
         for (candidate in candidates) {
             if (candidate != null && candidate > 0) {
                 return candidate
@@ -588,15 +595,31 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         return 0
     }
 
+    private fun updateShapeAppearance(to: ShapeAppearanceModel) {
+        if (currentShapeAppearance == to) {
+            return
+        }
+        for (child in children) {
+            if (child == selectionBadge) {
+                continue
+            }
+            child.background =
+                MaterialShapeDrawable().apply {
+                    fillColor = context.getColorCompat(R.color.sel_cover_bg)
+                    shapeAppearanceModel = to
+                }
+        }
+        currentShapeAppearance = to
+    }
+
     /**
      * Since the error drawable must also share a view with an image, any kind of transform or tint
      * must occur within a custom dialog, which is implemented here.
      */
     private class StyledDrawable(context: Context, inner: Drawable, @Px val iconSize: Int?) :
         Drawable() {
-        // Never tint a shared drawable instance. These icons are also used elsewhere (e.g. the
-        // About screen), and tinting without mutation can leak the modified tint state across
-        // views in inconsistent ways depending on drawable caching/inflation order.
+        // The icons we use might actually be shared and in that case we want to duplicate and
+        // tint rather than tinting a global drawable
         private val inner: Drawable = (inner.constantState?.newDrawable() ?: inner).mutate()
 
         init {
