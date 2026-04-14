@@ -154,8 +154,8 @@ class SearchFragment : ListFragment<Music, FragmentSearchBinding>() {
         binding.searchFilterGenres.isChecked = MusicType.GENRES in filters
         binding.searchFilterPlaylists.isChecked = MusicType.PLAYLISTS in filters
         binding.searchFilters.apply {
-            setOnCheckedStateChangeListener { group, ids ->
-                val types =
+            setOnCheckedStateChangeListener { _, ids ->
+                val filters =
                     ids.mapNotNullTo(mutableSetOf()) {
                         when (it) {
                             R.id.search_filter_songs -> MusicType.SONGS
@@ -166,7 +166,7 @@ class SearchFragment : ListFragment<Music, FragmentSearchBinding>() {
                             else -> null
                         }
                     }
-                searchModel.filters = types
+                searchModel.updateFilters(filters)
             }
         }
 

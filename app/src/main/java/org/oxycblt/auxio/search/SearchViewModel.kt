@@ -182,13 +182,20 @@ constructor(
         }
     }
 
-    var filters: Set<MusicType>
+    /**
+     * The current filters used for search.
+     */
+    val filters: Set<MusicType>
         get() = searchSettings.filters
-        set(value) {
-            // TODO: make this consistent in convention
-            searchSettings.filters = value
-            search(lastQuery)
-        }
+
+    /**
+     * Update the filters used by search. Will trigger a research.
+     * @param filters The new filters to use.
+     */
+    fun updateFilters(filters: Set<MusicType>) {
+        searchSettings.filters = filters
+        search(lastQuery)
+    }
 
     private companion object {
         val SORT = Sort(Sort.Mode.ByName, Sort.Direction.ASCENDING)
