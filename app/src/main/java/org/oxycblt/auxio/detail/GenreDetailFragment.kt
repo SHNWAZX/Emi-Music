@@ -38,7 +38,6 @@ import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.auxio.util.getPlural
 import org.oxycblt.auxio.util.navigateSafe
 import org.oxycblt.auxio.util.showToast
-import org.oxycblt.auxio.util.unlikelyToBeNull
 import org.oxycblt.musikr.Artist
 import org.oxycblt.musikr.Genre
 import org.oxycblt.musikr.Music
@@ -108,7 +107,8 @@ class GenreDetailFragment : DetailFragment<Genre, Music>() {
     }
 
     override fun onOpenParentMenu() {
-        listModel.openMenu(R.menu.detail_parent, unlikelyToBeNull(detailModel.currentGenre.value))
+        val genre = detailModel.currentGenre.value ?: return
+        listModel.openMenu(R.menu.detail_parent, genre)
     }
 
     override fun onOpenMenu(item: Music) {
@@ -146,10 +146,10 @@ class GenreDetailFragment : DetailFragment<Genre, Music>() {
                 context.getPlural(R.plurals.fmt_song_count, genre.songs.size),
             )
         binding.detailPlayButton?.setOnClickListener {
-            playbackModel.play(unlikelyToBeNull(detailModel.currentGenre.value))
+            playbackModel.play(genre)
         }
         binding.detailShuffleButton?.setOnClickListener {
-            playbackModel.shuffle(unlikelyToBeNull(detailModel.currentGenre.value))
+            playbackModel.shuffle(genre)
         }
         setToolbarPlaybackButtonsEnabled(true)
         updatePlayback(
@@ -266,7 +266,7 @@ class GenreDetailFragment : DetailFragment<Genre, Music>() {
     }
 
     private fun updatePlayback(song: Song?, parent: MusicParent?, isPlaying: Boolean) {
-        val currentGenre = unlikelyToBeNull(detailModel.currentGenre.value)
+        val currentGenre = detailModel.currentGenre.value ?: return
         val playingItem =
             when (parent) {
                 // Always highlight a playing artist if it's from this genre, and if the currently

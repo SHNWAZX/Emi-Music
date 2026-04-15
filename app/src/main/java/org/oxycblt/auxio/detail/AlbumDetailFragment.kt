@@ -41,7 +41,6 @@ import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.auxio.util.getPlural
 import org.oxycblt.auxio.util.navigateSafe
 import org.oxycblt.auxio.util.showToast
-import org.oxycblt.auxio.util.unlikelyToBeNull
 import org.oxycblt.musikr.Album
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.MusicParent
@@ -106,7 +105,8 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
     }
 
     override fun onOpenParentMenu() {
-        listModel.openMenu(R.menu.detail_album, unlikelyToBeNull(detailModel.currentAlbum.value))
+        val currentAlbum = detailModel.currentAlbum.value ?: return
+        listModel.openMenu(R.menu.detail_album, currentAlbum)
     }
 
     override fun onOpenMenu(item: Song) {
@@ -140,7 +140,7 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
             // Add a QoL behavior where navigation to the artist will occur if the artist
             // name is pressed.
             setOnClickListener {
-                detailModel.showArtist(unlikelyToBeNull(detailModel.currentAlbum.value))
+                detailModel.showArtist(album)
             }
         }
 
@@ -154,10 +154,11 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
         }
 
         binding.detailPlayButton?.setOnClickListener {
-            playbackModel.play(unlikelyToBeNull(detailModel.currentAlbum.value))
+            playbackModel.play(album)
         }
         binding.detailShuffleButton?.setOnClickListener {
-            playbackModel.shuffle(unlikelyToBeNull(detailModel.currentAlbum.value))
+            playbackModel.shuffle(album)
+            playbackModel.shuffle(album)
         }
         setToolbarPlaybackButtonsEnabled(true)
         updatePlayback(
@@ -183,7 +184,8 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
             // Songs should be scrolled to if the album matches, or a new detail
             // fragment should be launched otherwise.
             is Show.SongAlbumDetails -> {
-                if (unlikelyToBeNull(detailModel.currentAlbum.value) == show.song.album) {
+                val currentAlbum = detailModel.currentAlbum.value ?: return
+                if (currentAlbum == show.song.album) {
                     L.d("Navigating to a ${show.song} in this album")
                     scrollToAlbumSong(show.song)
                     detailModel.toShow.consume()
@@ -197,7 +199,8 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
             // If the album matches, no need to do anything. Otherwise launch a new
             // detail fragment.
             is Show.AlbumDetails -> {
-                if (unlikelyToBeNull(detailModel.currentAlbum.value) == show.album) {
+                val currentAlbum = detailModel.currentAlbum.value ?: return
+                if (currentAlbum == show.album) {
                     L.d("Navigating to the top of this album")
                     binding.detailRecycler.scrollToPosition(0)
                     detailModel.toShow.consume()

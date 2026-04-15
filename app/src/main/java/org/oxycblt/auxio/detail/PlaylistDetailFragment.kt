@@ -47,7 +47,6 @@ import org.oxycblt.auxio.util.context
 import org.oxycblt.auxio.util.getPlural
 import org.oxycblt.auxio.util.navigateSafe
 import org.oxycblt.auxio.util.showToast
-import org.oxycblt.auxio.util.unlikelyToBeNull
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.MusicParent
 import org.oxycblt.musikr.Playlist
@@ -187,9 +186,10 @@ class PlaylistDetailFragment :
     }
 
     override fun onOpenParentMenu() {
+        val currentPlaylist = detailModel.currentPlaylist.value ?: return
         listModel.openMenu(
             R.menu.detail_playlist,
-            unlikelyToBeNull(detailModel.currentPlaylist.value),
+            currentPlaylist
         )
     }
 
@@ -251,13 +251,13 @@ class PlaylistDetailFragment :
         binding.detailPlayButton?.apply {
             isEnabled = playable
             setOnClickListener {
-                playbackModel.play(unlikelyToBeNull(detailModel.currentPlaylist.value))
+                playbackModel.play(playlist)
             }
         }
         binding.detailShuffleButton?.apply {
             isEnabled = playable
             setOnClickListener {
-                playbackModel.shuffle(unlikelyToBeNull(detailModel.currentPlaylist.value))
+                playbackModel.shuffle(playlist)
             }
         }
         setToolbarPlaybackButtonsEnabled(playable)
