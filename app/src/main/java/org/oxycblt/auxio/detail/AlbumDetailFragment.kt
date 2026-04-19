@@ -158,7 +158,6 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
         }
         binding.detailShuffleButton?.setOnClickListener {
             playbackModel.shuffle(album)
-            playbackModel.shuffle(album)
         }
         setToolbarPlaybackButtonsEnabled(true)
         updatePlayback(
@@ -316,7 +315,7 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
             val binding = requireBinding()
             // RecyclerView will scroll assuming it has the total height of the screen (i.e a
             // collapsed appbar), so we need to collapse the appbar if that's the case.
-            binding.detailAppbar.setExpanded(false)
+            binding.detailAppbar?.setExpanded(false)
             if (!binding.detailRecycler.canScroll()) {
                 // Don't scroll if the RecyclerView goes off screen. If we go anyway, overscroll
                 // kicks in and creates a weird bounce effect.

@@ -21,7 +21,6 @@ package org.oxycblt.auxio.detail.list
 import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
-import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.TooltipCompat
@@ -203,8 +202,10 @@ private class EditHeaderViewHolder private constructor(private val binding: Item
          * @param parent The parent to inflate this instance from.
          * @return A new instance.
          */
-        fun from(parent: View) =
-            EditHeaderViewHolder(ItemEditHeaderBinding.inflate(parent.context.inflater))
+        fun from(parent: ViewGroup) =
+            EditHeaderViewHolder(
+                ItemEditHeaderBinding.inflate(parent.context.inflater, parent, false)
+            )
 
         /** A comparator that can be used with DiffUtil. */
         val DIFF_CALLBACK =
@@ -292,8 +293,10 @@ private constructor(private val binding: ItemEditableSongBinding) :
          * @param parent The parent to inflate this instance from.
          * @return A new instance.
          */
-        fun from(parent: View) =
-            PlaylistSongViewHolder(ItemEditableSongBinding.inflate(parent.context.inflater))
+        fun from(parent: ViewGroup) =
+            PlaylistSongViewHolder(
+                ItemEditableSongBinding.inflate(parent.context.inflater, parent, false)
+            )
 
         /** A comparator that can be used with DiffUtil. */
         val DIFF_CALLBACK = SongViewHolder.DIFF_CALLBACK

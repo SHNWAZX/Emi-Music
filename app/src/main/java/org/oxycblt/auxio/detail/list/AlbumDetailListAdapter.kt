@@ -18,7 +18,6 @@
  
 package org.oxycblt.auxio.detail.list
 
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -29,6 +28,9 @@ import org.oxycblt.auxio.IntegerTable
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.databinding.ItemAlbumSongBinding
 import org.oxycblt.auxio.databinding.ItemDiscHeaderBinding
+import org.oxycblt.auxio.detail.list.AlbumSongViewHolder.Companion.from
+import org.oxycblt.auxio.detail.list.DiscDividerViewHolder.Companion.from
+import org.oxycblt.auxio.detail.list.DiscHeaderViewHolder.Companion.from
 import org.oxycblt.auxio.list.Divider
 import org.oxycblt.auxio.list.Header
 import org.oxycblt.auxio.list.Item
@@ -140,8 +142,11 @@ private class DiscHeaderViewHolder(private val binding: ItemDiscHeaderBinding) :
          * @param parent The parent to inflate this instance from.
          * @return A new instance.
          */
-        fun from(parent: View) =
-            DiscHeaderViewHolder(ItemDiscHeaderBinding.inflate(parent.context.inflater))
+        fun from(parent: ViewGroup) =
+            DiscHeaderViewHolder(
+                // TODO: Get all viewholders to inflate anchored to parent
+                ItemDiscHeaderBinding.inflate(parent.context.inflater, parent, false)
+            )
 
         /** A comparator that can be used with DiffUtil. */
         val DIFF_CALLBACK =
@@ -177,7 +182,7 @@ class DiscDividerViewHolder private constructor(divider: MaterialDivider) :
          * @param parent The parent to inflate this instance from.
          * @return A new instance.
          */
-        fun from(parent: View) = DiscDividerViewHolder(MaterialDivider(parent.context))
+        fun from(parent: ViewGroup) = DiscDividerViewHolder(MaterialDivider(parent.context))
 
         /** A comparator that can be used with DiffUtil. */
         val DIFF_CALLBACK =
@@ -263,8 +268,10 @@ private class AlbumSongViewHolder private constructor(private val binding: ItemA
          * @param parent The parent to inflate this instance from.
          * @return A new instance.
          */
-        fun from(parent: View) =
-            AlbumSongViewHolder(ItemAlbumSongBinding.inflate(parent.context.inflater))
+        fun from(parent: ViewGroup) =
+            AlbumSongViewHolder(
+                ItemAlbumSongBinding.inflate(parent.context.inflater, parent, false)
+            )
 
         /** A comparator that can be used with DiffUtil. */
         val DIFF_CALLBACK =

@@ -22,11 +22,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowInsets
+import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.transition.MaterialSharedAxis
+import org.oxycblt.auxio.BuildConfig
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -41,6 +44,8 @@ import org.oxycblt.auxio.music.MusicViewModel
 import org.oxycblt.auxio.playback.PlaybackViewModel
 import org.oxycblt.auxio.util.getDimenPixels
 import org.oxycblt.auxio.util.setFullWidthLookup
+import org.oxycblt.auxio.util.systemBarInsetsCompat
+import org.oxycblt.auxio.util.systemCutoutInsetsCompat
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.MusicParent
 
@@ -78,7 +83,34 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
         super.onBindingCreated(binding, savedInstanceState)
 
         // --- UI SETUP ---
-        binding.detailAppbar.addOnOffsetChangedListener(this)
+        binding.detailAppbar?.addOnOffsetChangedListener(this)
+
+        val pane = binding.detailPane
+        if (pane != null) {
+            // 2-pane layout, re-adjust toolbar and pane to insets but not recycler,
+            // it applies its own insets
+            binding.detailToolbar.setOnApplyWindowInsetsListener { view, insets ->
+                    view.updatePadding(top = insets.systemBarInsetsCompat.top)
+                    insets
+                }
+            // prevents duplicate titles
+            // not needed for buttons since they are not in the dual-pane layout
+            binding.detailNormalToolbar.titleContainer.alpha = 0f
+            pane.setOnApplyWindowInsetsListener { view, insets ->
+                // todo: rtl awareness
+                view.updatePadding(bottom = insets.systemBarInsetsCompat.bottom)
+                insets
+            }
+        }
+        val appbar = binding.detailAppbar
+        if (appbar != null && savedInstanceState != null) {
+            // single-pane, we need to make sure restore the lost collapsing toolbar state
+            val panes = savedInstanceState.getBoolean(KEY_DUAL_PANE)
+            val scrolled = savedInstanceState.getBoolean(KEY_SCROLLED)
+            if (panes && scrolled) {
+                appbar.setExpanded(false)
+            }
+        }
 
         binding.detailNormalToolbar.apply {
             setNavigationOnClickListener { findNavController().navigateUp() }
@@ -88,17 +120,6 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
 
         binding.detailRecycler.apply {
             adapter = getDetailListAdapter()
-            (layoutManager as GridLayoutManager).setFullWidthLookup {
-                if (it != 0) {
-                    val item =
-                        detailModel.artistSongList.value.getOrElse(it - 1) {
-                            return@setFullWidthLookup false
-                        }
-                    item is PlainDivider || item is PlainHeader
-                } else {
-                    true
-                }
-            }
         }
 
         spacingSmall = requireContext().getDimenPixels(R.dimen.spacing_small)
@@ -106,9 +127,16 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
 
     override fun onDestroyBinding(binding: FragmentDetailBinding) {
         super.onDestroyBinding(binding)
-        binding.detailAppbar.removeOnOffsetChangedListener(this)
+        binding.detailAppbar?.removeOnOffsetChangedListener(this)
         binding.detailNormalToolbar.setOnMenuItemClickListener(null)
         binding.detailRecycler.adapter = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val binding = requireBinding()
+        outState.putBoolean(KEY_DUAL_PANE, binding.detailPane != null)
+        outState.putBoolean(KEY_SCROLLED, binding.detailRecycler.computeVerticalScrollOffset() > 0f)
     }
 
     override fun onOffsetChanged(appBarLayout: AppBarLayout, verticalOffset: Int) {
@@ -118,9 +146,11 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
 
         val outRatio = min(ratio * 2, 1f)
         val detailHeader = binding.detailHeader
-        detailHeader.scaleX = 1 - 0.2f * outRatio / (5f / 3f)
-        detailHeader.scaleY = 1 - 0.2f * outRatio / (5f / 3f)
-        detailHeader.alpha = 1 - outRatio
+        if (detailHeader != null) {
+            detailHeader.scaleX = 1 - 0.2f * outRatio / (5f / 3f)
+            detailHeader.scaleY = 1 - 0.2f * outRatio / (5f / 3f)
+            detailHeader.alpha = 1 - outRatio
+        }
 
         val inRatio = max(ratio - 0.5f, 0f) * 2
         animateToolbarView(binding.detailNormalToolbar.titleContainer, inRatio)
@@ -167,8 +197,11 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
     }
 
     private fun animateToolbarView(view: View?, ratio: Float) {
-        view?.alpha = ratio
-        view?.translationY = spacingSmall * (1 - ratio)
+        if (view == null) {
+            return
+        }
+        view.alpha = ratio
+        view.translationY = spacingSmall * (1 - ratio)
     }
 
     private fun animateToolbarActionButton(view: View?, ratio: Float) {
@@ -195,4 +228,9 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
     protected abstract fun onShuffleParent(parent: P)
 
     abstract fun onOpenParentMenu()
+
+    private companion object {
+        const val KEY_DUAL_PANE = BuildConfig.APPLICATION_ID + ".detail.DUAL_PANE"
+        const val KEY_SCROLLED = BuildConfig.APPLICATION_ID + ".detail.SCROLLED"
+    }
 }
