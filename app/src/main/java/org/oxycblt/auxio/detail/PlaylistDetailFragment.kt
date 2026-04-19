@@ -187,10 +187,7 @@ class PlaylistDetailFragment :
 
     override fun onOpenParentMenu() {
         val currentPlaylist = detailModel.currentPlaylist.value ?: return
-        listModel.openMenu(
-            R.menu.detail_playlist,
-            currentPlaylist
-        )
+        listModel.openMenu(R.menu.detail_playlist, currentPlaylist)
     }
 
     override fun onOpenMenu(item: Song) {
@@ -250,15 +247,11 @@ class PlaylistDetailFragment :
 
         binding.detailPlayButton?.apply {
             isEnabled = playable
-            setOnClickListener {
-                playbackModel.play(playlist)
-            }
+            setOnClickListener { playbackModel.play(playlist) }
         }
         binding.detailShuffleButton?.apply {
             isEnabled = playable
-            setOnClickListener {
-                playbackModel.shuffle(playlist)
-            }
+            setOnClickListener { playbackModel.shuffle(playlist) }
         }
         setToolbarPlaybackButtonsEnabled(playable)
         updatePlayback(

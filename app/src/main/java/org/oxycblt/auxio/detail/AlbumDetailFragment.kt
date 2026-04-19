@@ -139,9 +139,7 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
 
             // Add a QoL behavior where navigation to the artist will occur if the artist
             // name is pressed.
-            setOnClickListener {
-                detailModel.showArtist(album)
-            }
+            setOnClickListener { detailModel.showArtist(album) }
         }
 
         // Date, song count, and duration map to the info text
@@ -153,12 +151,8 @@ class AlbumDetailFragment : DetailFragment<Album, Song>() {
             text = context.getString(R.string.fmt_three, date, songCount, duration)
         }
 
-        binding.detailPlayButton?.setOnClickListener {
-            playbackModel.play(album)
-        }
-        binding.detailShuffleButton?.setOnClickListener {
-            playbackModel.shuffle(album)
-        }
+        binding.detailPlayButton?.setOnClickListener { playbackModel.play(album) }
+        binding.detailShuffleButton?.setOnClickListener { playbackModel.shuffle(album) }
         setToolbarPlaybackButtonsEnabled(true)
         updatePlayback(
             playbackModel.song.value,

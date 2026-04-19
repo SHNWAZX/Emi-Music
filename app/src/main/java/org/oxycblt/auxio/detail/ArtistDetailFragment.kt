@@ -181,12 +181,8 @@ class ArtistDetailFragment : DetailFragment<Artist, Music>() {
             setToolbarPlaybackButtonsEnabled(false)
         }
 
-        binding.detailPlayButton?.setOnClickListener {
-            playbackModel.play(artist)
-        }
-        binding.detailShuffleButton?.setOnClickListener {
-            playbackModel.shuffle(artist)
-        }
+        binding.detailPlayButton?.setOnClickListener { playbackModel.play(artist) }
+        binding.detailShuffleButton?.setOnClickListener { playbackModel.shuffle(artist) }
         updatePlayback(
             playbackModel.song.value,
             playbackModel.parent.value,

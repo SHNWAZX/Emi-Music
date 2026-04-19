@@ -22,30 +22,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowInsets
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.transition.MaterialSharedAxis
-import org.oxycblt.auxio.BuildConfig
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import org.oxycblt.auxio.BuildConfig
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.databinding.FragmentDetailBinding
 import org.oxycblt.auxio.detail.list.DetailListAdapter
 import org.oxycblt.auxio.list.ListFragment
 import org.oxycblt.auxio.list.ListViewModel
-import org.oxycblt.auxio.list.PlainDivider
-import org.oxycblt.auxio.list.PlainHeader
 import org.oxycblt.auxio.music.MusicViewModel
 import org.oxycblt.auxio.playback.PlaybackViewModel
 import org.oxycblt.auxio.util.getDimenPixels
-import org.oxycblt.auxio.util.setFullWidthLookup
 import org.oxycblt.auxio.util.systemBarInsetsCompat
-import org.oxycblt.auxio.util.systemCutoutInsetsCompat
 import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.MusicParent
 
@@ -90,9 +84,9 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
             // 2-pane layout, re-adjust toolbar and pane to insets but not recycler,
             // it applies its own insets
             binding.detailToolbar.setOnApplyWindowInsetsListener { view, insets ->
-                    view.updatePadding(top = insets.systemBarInsetsCompat.top)
-                    insets
-                }
+                view.updatePadding(top = insets.systemBarInsetsCompat.top)
+                insets
+            }
             // prevents duplicate titles
             // not needed for buttons since they are not in the dual-pane layout
             binding.detailNormalToolbar.titleContainer.alpha = 0f
@@ -118,9 +112,7 @@ abstract class DetailFragment<P : MusicParent, C : Music> :
             setOnOverflowMenuClick { onOpenParentMenu() }
         }
 
-        binding.detailRecycler.apply {
-            adapter = getDetailListAdapter()
-        }
+        binding.detailRecycler.apply { adapter = getDetailListAdapter() }
 
         spacingSmall = requireContext().getDimenPixels(R.dimen.spacing_small)
     }

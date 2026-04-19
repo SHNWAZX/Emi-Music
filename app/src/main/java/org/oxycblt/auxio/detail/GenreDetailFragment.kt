@@ -145,12 +145,8 @@ class GenreDetailFragment : DetailFragment<Genre, Music>() {
                 context.getPlural(R.plurals.fmt_artist_count, genre.artists.size),
                 context.getPlural(R.plurals.fmt_song_count, genre.songs.size),
             )
-        binding.detailPlayButton?.setOnClickListener {
-            playbackModel.play(genre)
-        }
-        binding.detailShuffleButton?.setOnClickListener {
-            playbackModel.shuffle(genre)
-        }
+        binding.detailPlayButton?.setOnClickListener { playbackModel.play(genre) }
+        binding.detailShuffleButton?.setOnClickListener { playbackModel.shuffle(genre) }
         setToolbarPlaybackButtonsEnabled(true)
         updatePlayback(
             playbackModel.song.value,
