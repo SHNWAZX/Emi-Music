@@ -208,9 +208,9 @@ private class M3UImpl(private val volumeManager: VolumeManager) : M3U() {
                     if (config.windowsPaths) {
                         // Assume the plain windows C volume, since that's probably where most music
                         // libraries are on a windows PC.
-                        "C:\\\\${song.path.components.windowsString}"
+                        "C:\\\\${song.path.volume.components?.let { it.windowsString + "\\" } ?: ""}${song.path.components.windowsString}"
                     } else {
-                        "/${song.path.components.unixString}"
+                        "/${song.path.volume.components?.let { it.unixString + "/" } ?: ""}${song.path.components.unixString}"
                     }
                 } else {
                     // First need to make this path relative to the working directory of the M3U
