@@ -40,8 +40,8 @@ class CoilModule {
         coverFactory: CoverFetcher.Factory,
         galleryKeyer: GalleryComposeFetcher.Keyer,
         galleryFetcherFactory: GalleryComposeFetcher.Factory,
-        smatteringKeyer: SmatteringComposeFetcher.Keyer,
-        smatteringFetcherFactory: SmatteringComposeFetcher.Factory,
+        smatteringKeyer: SmatteringCompositionFetcher.Keyer,
+        smatteringFetcherFactory: SmatteringCompositionFetcher.Factory,
         stackKeyer: StackCompositionFetcher.Keyer,
         stackFetcherFactory: StackCompositionFetcher.Factory,
     ) =

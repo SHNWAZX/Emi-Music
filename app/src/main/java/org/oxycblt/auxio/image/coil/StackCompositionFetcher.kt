@@ -25,7 +25,6 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
-import android.graphics.Rect
 import android.graphics.RectF
 import androidx.annotation.ColorInt
 import androidx.core.graphics.createBitmap
@@ -43,7 +42,7 @@ import org.oxycblt.musikr.covers.CoverCollection
 data class StackCoverComposition(
     override val covers: CoverCollection,
     val cornerRadiusRatio: Float,
-    val seed: Int,
+    override val seed: Int,
     @ColorInt val backgroundColor: Int,
 ) : CoverComposition
 
@@ -69,7 +68,7 @@ private constructor(context: Context, val data: StackCoverComposition, size: Siz
             color = data.backgroundColor
         }
 
-    override fun compose(bitmaps: List<Bitmap>, size: Int): Bitmap {
+    override fun compose(bitmaps: List<Bitmap>, size: Int, random: Random): Bitmap {
         val sizef = size.toFloat()
         val cornerRadius =
             min(sizef * data.cornerRadiusRatio, sizef * ComposeCoverDefaults.MAX_CORNER_RATIO)
@@ -78,12 +77,12 @@ private constructor(context: Context, val data: StackCoverComposition, size: Siz
                 sizef * ComposeCoverDefaults.GAP_RATIO,
                 cornerRadius * ComposeCoverDefaults.MIN_GAP_CORNER_RATIO,
             )
-        val zOrder = bitmaps.indices.toList().shuffled(Random(data.seed))
+        val zOrder = seededZOrder(data.seed, random)
         val result = createBitmap(size, size)
         val canvas = Canvas(result)
         canvas.drawColor(data.backgroundColor)
         // this is how much we will overlap covers onto eachother
-        val overlapSize = (sizef * ComposeCoverDefaults.OVERLAP_PERCENT).coerceAtMost(sizef)
+        val overlapSize = (sizef * ComposeCoverDefaults.COVER_SIZE_PERCENT).coerceAtMost(sizef)
         // in turn this is the visible fraction we will get of a cover post-overlap
         val visibleSize = sizef - overlapSize
         // by dividing it by 2 you uhhhhhhhh...hm....
@@ -147,28 +146,6 @@ private constructor(context: Context, val data: StackCoverComposition, size: Siz
                 Path.Direction.CW,
             )
         }
-
-    private fun drawBitmapCover(canvas: Canvas, bitmap: Bitmap, dest: RectF, paint: Paint) {
-        val bitmapRatio = bitmap.width.toFloat() / bitmap.height.toFloat()
-        val destRatio = dest.width() / dest.height()
-
-        val srcRect = Rect(0, 0, bitmap.width, bitmap.height)
-
-        // crop the bitmap if it's not properly 1:1
-        if (bitmapRatio > destRatio) {
-            val newWidth = (bitmap.height * destRatio).toInt()
-            val xOffset = (bitmap.width - newWidth) / 2
-            srcRect.left = xOffset
-            srcRect.right = xOffset + newWidth
-        } else {
-            val newHeight = (bitmap.width / destRatio).toInt()
-            val yOffset = (bitmap.height - newHeight) / 2
-            srcRect.top = yOffset
-            srcRect.bottom = yOffset + newHeight
-        }
-
-        canvas.drawBitmap(bitmap, srcRect, dest, paint)
-    }
 
     class Factory @Inject constructor() : Fetcher.Factory<StackCoverComposition> {
         override fun create(

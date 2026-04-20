@@ -20,6 +20,10 @@ package org.oxycblt.auxio.image.coil
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import androidx.core.graphics.drawable.toDrawable
 import coil3.Bitmap
 import coil3.asImage
@@ -30,6 +34,8 @@ import coil3.fetch.ImageFetchResult
 import coil3.size.Size
 import coil3.size.pxOrElse
 import kotlin.math.min
+import kotlin.random.Random
+import kotlin.random.nextInt
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.take
@@ -38,6 +44,7 @@ import org.oxycblt.musikr.covers.CoverCollection
 
 interface CoverComposition {
     val covers: CoverCollection
+    val seed: Int
 }
 
 abstract class CoverCompositionFetcher(
@@ -64,8 +71,17 @@ abstract class CoverCompositionFetcher(
 
         val squareSize =
             min(size.width.pxOrElse { 512 }, size.height.pxOrElse { 512 }).coerceAtLeast(1)
+        val random = Random(data.seed)
+        for (i in 0..10) {
+            // cycle random a few times
+            random.nextLong()
+        }
+        for (i in 0..random.nextInt(1..30)) {
+            // then cycle it some more
+            random.nextLong()
+        }
         return ImageFetchResult(
-            image = compose(bitmaps, squareSize).toDrawable(context.resources).asImage(),
+            image = compose(bitmaps, squareSize, random).toDrawable(context.resources).asImage(),
             isSampled = true,
             dataSource = DataSource.DISK,
         )
@@ -78,5 +94,30 @@ abstract class CoverCompositionFetcher(
      * @param bitmaps The bitmaps to use.
      * @param size The size of the square bitmap you should create.
      */
-    protected abstract fun compose(bitmaps: List<Bitmap>, size: Int): Bitmap
+    protected abstract fun compose(bitmaps: List<Bitmap>, size: Int, random: Random): Bitmap
+
+    protected fun drawBitmapCover(canvas: Canvas, bitmap: Bitmap, dest: RectF, paint: Paint) {
+        val bitmapRatio = bitmap.width.toFloat() / bitmap.height.toFloat()
+        val destRatio = dest.width() / dest.height()
+
+        val srcRect = Rect(0, 0, bitmap.width, bitmap.height)
+
+        // crop the bitmap if it's not properly 1:1
+        if (bitmapRatio > destRatio) {
+            val newWidth = (bitmap.height * destRatio).toInt()
+            val xOffset = (bitmap.width - newWidth) / 2
+            srcRect.left = xOffset
+            srcRect.right = xOffset + newWidth
+        } else {
+            val newHeight = (bitmap.width / destRatio).toInt()
+            val yOffset = (bitmap.height - newHeight) / 2
+            srcRect.top = yOffset
+            srcRect.bottom = yOffset + newHeight
+        }
+
+        canvas.drawBitmap(bitmap, srcRect, dest, paint)
+    }
+
+    protected fun seededZOrder(n: Int, random: Random): List<Int> =
+        (0 until n).toList().shuffled(random)
 }

@@ -59,7 +59,7 @@ import kotlin.random.Random
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.image.coil.GalleryCoverCollection
 import org.oxycblt.auxio.image.coil.RoundedRectTransformation
-import org.oxycblt.auxio.image.coil.SmatteringCoverCollection
+import org.oxycblt.auxio.image.coil.SmatteringCoverComposition
 import org.oxycblt.auxio.image.coil.SquareCropTransformation
 import org.oxycblt.auxio.image.coil.StackCoverComposition
 import org.oxycblt.auxio.ui.Effect
@@ -390,12 +390,10 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         val uidSeed = artist.uid.toString().hashCode()
         bindImpl(
             { size ->
-                SmatteringCoverCollection(
+                SmatteringCoverComposition(
                     artist.covers,
                     responsiveCornerRatio(size),
-                    seededFanAngle(uidSeed),
-                    seededTiltAngle(uidSeed),
-                    seededZOrder(uidSeed),
+                    uidSeed,
                     backgroundColor(),
                 )
             },
