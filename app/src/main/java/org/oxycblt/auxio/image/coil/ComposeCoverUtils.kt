@@ -19,7 +19,7 @@
 package org.oxycblt.auxio.image.coil
 
 internal object ComposeCoverDefaults {
-    const val CARD_SIZE_PERCENT = 0.60f
+    const val OVERLAP_PERCENT = 0.60f
     const val GAP_RATIO = 0.04f
     const val MIN_GAP_CORNER_RATIO = 0.35f
     const val MAX_CORNER_RATIO = 0.15f

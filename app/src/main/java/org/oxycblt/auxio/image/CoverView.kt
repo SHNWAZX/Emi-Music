@@ -28,6 +28,7 @@ import android.graphics.RectF
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.util.Size
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -60,7 +61,7 @@ import org.oxycblt.auxio.image.coil.GalleryCoverCollection
 import org.oxycblt.auxio.image.coil.RoundedRectTransformation
 import org.oxycblt.auxio.image.coil.SmatteringCoverCollection
 import org.oxycblt.auxio.image.coil.SquareCropTransformation
-import org.oxycblt.auxio.image.coil.StackCoverCollection
+import org.oxycblt.auxio.image.coil.StackCoverComposition
 import org.oxycblt.auxio.ui.Effect
 import org.oxycblt.auxio.ui.Spatial
 import org.oxycblt.auxio.ui.UISettings
@@ -388,10 +389,10 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         // stack of vinyl.
         val uidSeed = artist.uid.toString().hashCode()
         bindImpl(
-            { cornerBounds ->
+            { size ->
                 SmatteringCoverCollection(
                     artist.covers,
-                    responsiveCornerSize(cornerBounds),
+                    responsiveCornerRatio(size),
                     seededFanAngle(uidSeed),
                     seededTiltAngle(uidSeed),
                     seededZOrder(uidSeed),
@@ -413,10 +414,10 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         // Genres are organized like a "gallery" of various covers that overlap eachother,
         // as if they were framed on a wall.
         bindImpl(
-            { cornerBounds ->
+            { size ->
                 GalleryCoverCollection(
                     genre.covers,
-                    responsiveCornerSize(cornerBounds),
+                    responsiveCornerRatio(size),
                     seededZOrder(genre.uid.toString().hashCode()),
                     backgroundColor(),
                 )
@@ -435,11 +436,11 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         // Playlists are organized in a straight diagonal stack to give the appearance of an
         // "orderly" pile of covers.
         bindImpl(
-            { cornerBounds ->
-                StackCoverCollection(
+            { size ->
+                StackCoverComposition(
                     playlist.covers,
-                    responsiveCornerSize(cornerBounds),
-                    seededZOrder(playlist.uid.toString().hashCode()),
+                    responsiveCornerRatio(size),
+                    playlist.uid.toString().hashCode(),
                     backgroundColor(),
                 )
             },
@@ -463,11 +464,11 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         uidSeed: Int = songs.hashCode(),
     ) =
         bindImpl(
-            { cornerBounds ->
-                StackCoverCollection(
+            { size ->
+                StackCoverComposition(
                     CoverCollection.from(songs.mapNotNull { it.cover }),
-                    responsiveCornerSize(cornerBounds),
-                    seededZOrder(uidSeed),
+                    responsiveCornerRatio(size),
+                    uidSeed,
                     backgroundColor(),
                 )
             },
@@ -477,7 +478,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         )
 
     private fun bindImpl(
-        img: (RectF) -> Any?,
+        img: (Size) -> Any?,
         desc: String,
         @DrawableRes errorRes: Int,
         shapeAppearanceModel: ShapeAppearanceModel,
@@ -489,38 +490,38 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     }
 
     private fun bindWait(
-        img: (RectF) -> Any?,
+        img: (Size) -> Any?,
         desc: String,
         @DrawableRes errorRes: Int,
         shapeAppearanceModel: ShapeAppearanceModel,
     ) {
         // for some reason randomly corner radii started breaking on menus
         // fix this by waiting until we are laid out instead
-        val cornerBounds = resolveCurrentBoundsForCorners()
-        if (cornerBounds != null) {
-            bindWithCorners(img, desc, errorRes, cornerBounds, shapeAppearanceModel)
+        val size = resolveSize()
+        if (size != null) {
+            bindSized(img, desc, errorRes, size, shapeAppearanceModel)
         } else {
             doOnLayout { bindImpl(img, desc, errorRes, shapeAppearanceModel) }
         }
     }
 
-    private fun bindWithCorners(
-        img: (RectF) -> Any?,
+    private fun bindSized(
+        img: (Size) -> Any?,
         desc: String,
         @DrawableRes errorRes: Int,
-        cornerBounds: RectF,
+        size: Size,
         shapeAppearanceModel: ShapeAppearanceModel,
     ) {
         val request =
             ImageRequest.Builder(context)
-                .data(img(cornerBounds))
+                .data(img(size))
                 .error(
                     StyledDrawable(context, context.getDrawableCompat(errorRes), iconSize).asImage()
                 )
                 .target(image)
 
-        val cornerRadius =
-            cornerBounds.let { shapeAppearanceModel.topLeftCornerSize.getCornerSize(it) }
+        val bounds = RectF(0f, 0f, size.width.toFloat(), size.height.toFloat())
+        val cornerRadius = shapeAppearanceModel.topLeftCornerSize.getCornerSize(bounds)
         val cornersTransformation = RoundedRectTransformation(cornerRadius)
         val circular = shapeAppearanceModel.topLeftCornerSize is RelativeCornerSize
         if (circular || imageSettings.forceSquareCovers) {
@@ -535,19 +536,23 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         contentDescription = desc
     }
 
-    private fun responsiveCornerSize(cornerBounds: RectF): Float {
+    private fun responsiveCornerRatio(size: Size): Float {
         if (!uiSettings.roundMode) {
             return 0f
         }
-        val cornerRadiusPx = squareishShapeAppearance.topLeftCornerSize.getCornerSize(cornerBounds)
-        if (cornerRadiusPx <= 0f) {
+
+        val bounds = RectF(0f, 0f, size.width.toFloat(), size.height.toFloat())
+        val cornerRadius = squareishShapeAppearance.topLeftCornerSize.getCornerSize(bounds)
+        if (cornerRadius <= 0f) {
             return 0f
         }
-        val minSize = min(cornerBounds.width(), cornerBounds.height())
+        val minSize = min(size.width, size.height)
         if (minSize <= 0f) {
+            // edge case since i dont want to crash if insane android layout stuff happens
+            // and somehow makes our sizes zeroable
             return 0f
         }
-        return cornerRadiusPx / minSize
+        return cornerRadius / minSize
     }
 
     private fun seededZOrder(uidSeed: Int): List<Int> {
@@ -568,22 +573,19 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
 
     private fun backgroundColor(): Int = context.getColorCompat(R.color.sel_cover_bg).defaultColor
 
-    private fun resolveCurrentBoundsForCorners(): RectF? {
-        val widthPx = firstNonZeroOrNull(width, measuredWidth, layoutParams?.width)
-        val heightPx = firstNonZeroOrNull(height, measuredHeight, layoutParams?.height)
-        if (widthPx <= 0 || heightPx <= 0) {
+    private fun resolveSize(): Size? {
+        // just try all possible dimens, CoverView can be everywhere, even extremely annoying
+        // layouts that behave odd
+        val widthPx =
+            listOf(width, measuredWidth, layoutParams?.width).firstOrNull { it != null && it > 0 }
+        val heightPx =
+            listOf(height, measuredHeight, layoutParams?.height).firstOrNull {
+                it != null && it > 0
+            }
+        if (widthPx == null || heightPx == null) {
             return null
         }
-        return RectF(0f, 0f, widthPx.toFloat(), heightPx.toFloat())
-    }
-
-    private fun firstNonZeroOrNull(vararg candidates: Int?): Int {
-        for (candidate in candidates) {
-            if (candidate != null && candidate > 0) {
-                return candidate
-            }
-        }
-        return 0
+        return Size(widthPx, heightPx)
     }
 
     private fun updateShapeAppearance(to: ShapeAppearanceModel) {

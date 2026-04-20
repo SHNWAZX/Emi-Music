@@ -42,8 +42,8 @@ class CoilModule {
         galleryFetcherFactory: GalleryComposeFetcher.Factory,
         smatteringKeyer: SmatteringComposeFetcher.Keyer,
         smatteringFetcherFactory: SmatteringComposeFetcher.Factory,
-        stackKeyer: StackComposeFetcher.Keyer,
-        stackFetcherFactory: StackComposeFetcher.Factory,
+        stackKeyer: StackCompositionFetcher.Keyer,
+        stackFetcherFactory: StackCompositionFetcher.Factory,
     ) =
         ImageLoader.Builder(context)
             .components {

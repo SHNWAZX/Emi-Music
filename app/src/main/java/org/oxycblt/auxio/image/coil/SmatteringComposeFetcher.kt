@@ -167,7 +167,7 @@ private constructor(
                 }
 
             val totalSize = config.outputSizePx.toFloat()
-            val cardSize = totalSize * ComposeCoverDefaults.CARD_SIZE_PERCENT
+            val cardSize = totalSize * ComposeCoverDefaults.OVERLAP_PERCENT
             val inset = 0f
             val outset = totalSize * OUTSET_PERCENT
             val cornerRadiusPx =
