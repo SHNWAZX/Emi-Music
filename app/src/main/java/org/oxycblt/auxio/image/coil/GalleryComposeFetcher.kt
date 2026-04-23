@@ -31,14 +31,14 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
 import coil3.ImageLoader
 import coil3.fetch.Fetcher
+import coil3.key.Keyer as CoilKeyer
 import coil3.request.Options
 import coil3.size.Size
-import org.oxycblt.musikr.covers.CoverCollection
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
-import coil3.key.Keyer as CoilKeyer
+import org.oxycblt.musikr.covers.CoverCollection
 
 data class GalleryCoverCollection(
     override val covers: CoverCollection,
@@ -48,20 +48,18 @@ data class GalleryCoverCollection(
 ) : CoverComposition
 
 class GalleryComposeFetcher
-private constructor(
-    context: Context,
-    private val data: GalleryCoverCollection,
-    size: Size,
-) : CoverCompositionFetcher(context, data, size) {
+private constructor(context: Context, private val data: GalleryCoverCollection, size: Size) :
+    CoverCompositionFetcher(context, data, size) {
 
     override fun compose(bitmaps: List<Bitmap>, size: Int, random: Random): Bitmap {
         val sizef = size.toFloat()
         val cornerRadiusPx =
             min(sizef * data.cornerRadiusRatio, sizef * ComposeCoverDefaults.MAX_CORNER_RATIO)
-        val gapWidthPx = max(
-            sizef * ComposeCoverDefaults.GAP_RATIO,
-            cornerRadiusPx * ComposeCoverDefaults.MIN_GAP_CORNER_RATIO,
-        )
+        val gapWidthPx =
+            max(
+                sizef * ComposeCoverDefaults.GAP_RATIO,
+                cornerRadiusPx * ComposeCoverDefaults.MIN_GAP_CORNER_RATIO,
+            )
         val backgroundColor = data.backgroundColor
         val zOrder = seededZOrder(bitmaps.size, random)
         val result = createBitmap(size, size)
@@ -85,13 +83,7 @@ private constructor(
         val p0 = RectF(0f, 0f, coverSize, coverSize)
         val p1 = RectF(sizef - coverSize, 0f, sizef, coverSize)
         val p2 = RectF(0f, sizef - coverSize, coverSize, sizef)
-        val p3 =
-            RectF(
-                sizef - coverSize,
-                sizef - coverSize,
-                sizef,
-                sizef,
-            )
+        val p3 = RectF(sizef - coverSize, sizef - coverSize, sizef, sizef)
 
         val positions = listOf(p0, p1, p2, p3)
         // first we actually have to aggregate the geometry here so that
@@ -123,19 +115,20 @@ private constructor(
                         topLeft = if (!isTop && !isLeft) cornerRadiusPx else 0f,
                         topRight = if (!isTop && !isRight) cornerRadiusPx else 0f,
                         bottomRight = if (!isBottom && !isRight) cornerRadiusPx else 0f,
-                        bottomLeft = if (!isBottom && !isLeft) cornerRadiusPx else 0f
+                        bottomLeft = if (!isBottom && !isLeft) cornerRadiusPx else 0f,
                     )
 
                 // then the inner mask
                 // adjust corner radii to make up for gap
                 val innerRadius = (cornerRadiusPx - gapWidthPx).coerceAtLeast(0f)
-                val maskPath = rounded(
-                    innerRect,
-                    topLeft = if (!isTop && !isLeft) innerRadius else 0f,
-                    topRight = if (!isTop && !isRight) innerRadius else 0f,
-                    bottomRight = if (!isBottom && !isRight) innerRadius else 0f,
-                    bottomLeft = if (!isBottom && !isLeft) innerRadius else 0f
-                )
+                val maskPath =
+                    rounded(
+                        innerRect,
+                        topLeft = if (!isTop && !isLeft) innerRadius else 0f,
+                        topRight = if (!isTop && !isRight) innerRadius else 0f,
+                        bottomRight = if (!isBottom && !isRight) innerRadius else 0f,
+                        bottomLeft = if (!isBottom && !isLeft) innerRadius else 0f,
+                    )
 
                 TileGeometry(innerRect, gapPath, maskPath)
             }
@@ -182,7 +175,7 @@ private constructor(
         topLeft: Float,
         topRight: Float,
         bottomRight: Float,
-        bottomLeft: Float
+        bottomLeft: Float,
     ) =
         Path().apply {
             addRoundRect(
@@ -201,7 +194,6 @@ private constructor(
             )
         }
 
-
     private data class TileGeometry(val innerRect: RectF, val gapPath: Path, val maskPath: Path)
 
     class Factory @Inject constructor() : Fetcher.Factory<GalleryCoverCollection> {
@@ -214,8 +206,7 @@ private constructor(
 
     class Keyer @Inject constructor() : CoilKeyer<GalleryCoverCollection> {
         override fun key(data: GalleryCoverCollection, options: Options): String {
-            val config =
-                "${data.cornerRadiusRatio}.${data.seed}.${data.backgroundColor}"
+            val config = "${data.cornerRadiusRatio}.${data.seed}.${data.backgroundColor}"
             return "g:${data.covers.hashCode()}.${options.size.width}.${options.size.height}.$config"
         }
     }
