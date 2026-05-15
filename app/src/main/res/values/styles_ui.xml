@@ -462,12 +462,12 @@
 
     <style name="Widget.Auxio.Button.Playback.More" parent="Widget.Auxio.Button.Icon.Base" />
 
-    <style name="Widget.Auxio.Button.Playback.Toggle" parent="Widget.Material3Expressive.Button.IconButton.Outlined">
+    <style name="Widget.Auxio.Button.Playback.Toggle" parent="Widget.Material3Expressive.Button.IconButton">
         <item name="android:checkable">true</item>
         <item name="toggleCheckedStateOnClick">false</item>
         <item name="iconTint">@color/sel_checkable_icon</item>
-        <item name="strokeColor">@color/sel_checkable_outline</item>
-        <item name="backgroundTint">?attr/colorSurfaceContainerLow</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 
     <style name="Widget.Auxio.Button.Playback.Skip" parent="Widget.Material3Expressive.Button.IconButton.Tonal" />
@@ -478,10 +478,10 @@
     </style>
     <style name="ThemeOverlay.Auxio.Button.PrimaryTonal" parent="">
         <item name="colorContainer">?attr/colorPrimaryContainer</item>
-        <item name="colorContainerChecked">?attr/colorPrimary</item>
+        <item name="colorContainerChecked">?attr/colorSecondary</item>
         <item name="colorContainerUnchecked">?attr/colorPrimaryContainer</item>
         <item name="colorOnContainer">?attr/colorOnPrimaryContainer</item>
-        <item name="colorOnContainerChecked">?attr/colorOnPrimary</item>
+        <item name="colorOnContainerChecked">?attr/colorOnSecondary</item>
         <item name="colorOnContainerUnchecked">?attr/colorOnPrimaryContainer</item>
     </style>
 </resources>
