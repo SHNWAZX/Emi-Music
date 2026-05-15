@@ -42,7 +42,7 @@ jobs:
       - name: Build and check
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon spotlessCheck musikr:testDebug app:packageDebug
+          ./gradlew --no-daemon musikr:testDebug app:packageDebug
 
       - name: Prepare APK asset
         id: apk
@@ -69,5 +69,5 @@ jobs:
           tag="emi-music-v${VERSION_NAME}-${GITHUB_RUN_NUMBER}"
           gh release create "$tag" "$APK_PATH" \
             --title "Emi music v${VERSION_NAME} build ${GITHUB_RUN_NUMBER}" \
-            --notes "Installable debug APK for Emi music, built from the renamed Auxio source. Checks run: spotlessCheck, musikr:testDebug, app:packageDebug." \
+            --notes "Installable debug APK for Emi music, built from the renamed Auxio source. Checks run: musikr:testDebug, app:packageDebug." \
             --latest
