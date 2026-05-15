@@ -349,7 +349,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
         bindImpl(
             { song.cover },
             context.getString(R.string.desc_album_cover, song.album.name),
-            R.drawable.ic_album_24,
+            R.drawable.ic_emi_cover_24,
             squareishShapeAppearance,
         )
 

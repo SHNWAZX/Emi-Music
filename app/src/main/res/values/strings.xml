@@ -3,7 +3,7 @@
     <!-- Info namespace | App labels -->
     <eat-comment />
 
-    <string name="info_app_desc">A simple, rational music player for android.</string>
+    <string name="info_app_desc">A clean local music player for Android.</string>
 
     <!-- Label Namespace | Static Labels -->
     <eat-comment />
@@ -168,7 +168,7 @@
 
     <string name="lbl_about">About</string>
     <string name="lbl_version">Version</string>
-    <string name="lbl_code">Source code</string>
+    <string name="lbl_code">GitHub repository</string>
     <string name="lbl_wiki">Wiki</string>
     <string name="lbl_licenses">Licenses</string>
     <string name="lbl_library_counts">Library statistics</string>
@@ -181,10 +181,10 @@
     <!-- As in to report an error -->
     <string name="lbl_report">Report</string>
 
-    <string name="lbl_author">Author</string>
-    <string name="lbl_author_name">Alexander Capehart</string>
+    <string name="lbl_author">Developer</string>
+    <string name="lbl_author_name">SHNWAZX</string>
     <string name="lbl_feedback">Feedback</string>
-    <string name="lbl_github">Make an issue on GitHub</string>
+    <string name="lbl_github">Report a bug on GitHub</string>
     <string name="lbl_email">Send an email</string>
     <string name="lbl_donate">Donate</string>
     <string name="lbl_supporters">Supporters</string>
