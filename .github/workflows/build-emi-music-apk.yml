@@ -1,0 +1,73 @@
+name: Build Emi Music APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "jetbrains"
+          cache: gradle
+
+      - name: Set up Android build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "cmake;3.22.1" \
+            "ndk;28.2.13676358"
+
+      - name: Clone submodules
+        run: |
+          git submodule update --init media musikr/src/main/cpp/taglib
+          git -C musikr/src/main/cpp/taglib submodule update --init --recursive 3rdparty/utfcpp
+          git -C media config submodule.libraries/decoder_ffmpeg/src/main/jni/ffmpeg.url https://github.com/FFmpeg/FFmpeg.git
+          git -C media submodule update --init --recursive --filter=blob:none --depth 1 libraries/decoder_ffmpeg/src/main/jni/ffmpeg
+
+      - name: Build and check
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon spotlessCheck musikr:testDebug app:packageDebug
+
+      - name: Prepare APK asset
+        id: apk
+        run: |
+          version_name="$(sed -n 's/.*versionName "\([^"]*\)".*/\1/p' app/build.gradle | head -n 1)"
+          mkdir -p dist
+          apk_path="dist/Emi-music-v${version_name}-debug.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$apk_path"
+          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "apk_path=$apk_path" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Emi-music-debug-apk
+          path: ${{ steps.apk.outputs.apk_path }}
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_PATH: ${{ steps.apk.outputs.apk_path }}
+          VERSION_NAME: ${{ steps.apk.outputs.version_name }}
+        run: |
+          tag="emi-music-v${VERSION_NAME}-${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" "$APK_PATH" \
+            --title "Emi music v${VERSION_NAME} build ${GITHUB_RUN_NUMBER}" \
+            --notes "Installable debug APK for Emi music, built from the renamed Auxio source. Checks run: spotlessCheck, musikr:testDebug, app:packageDebug." \
+            --latest
