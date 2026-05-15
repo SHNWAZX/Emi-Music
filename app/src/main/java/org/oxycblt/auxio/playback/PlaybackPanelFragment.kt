@@ -41,7 +41,7 @@ import org.oxycblt.auxio.music.resolve
 import org.oxycblt.auxio.music.resolveNames
 import org.oxycblt.auxio.playback.state.RepeatMode
 import org.oxycblt.auxio.playback.ui.StyledSeekBar
-import org.oxycblt.auxio.playback.ui.stepper.DisplayPortion
+import org.oxycblt.auxio.playback.ui.stepper.Direction
 import org.oxycblt.auxio.playback.ui.stepper.PlayerFastSeekOverlay
 import org.oxycblt.auxio.ui.ViewBindingFragment
 import org.oxycblt.auxio.util.collectImmediately
@@ -104,10 +104,7 @@ class PlaybackPanelFragment :
         binding.playbackCover.onSwipeListener = null
 
         // Set up fast seek overlay
-        binding.playbackFastSeekOverlay?.apply {
-            performListener(this@PlaybackPanelFragment)
-            seekSecondsSupplier { 10 } // 10 seconds per double-tap
-        }
+        binding.playbackFastSeekOverlay?.performListener = this
         binding.playbackSong.apply {
             isSelected = true
             setOnClickListener { navigateToCurrentSong() }
@@ -279,25 +276,10 @@ class PlaybackPanelFragment :
         playbackModel.song.value?.let { detailModel.showAlbum(it.album) }
     }
 
-    override fun getFastSeekDirection(
-        portion: DisplayPortion
-    ): PlayerFastSeekOverlay.PerformListener.FastSeekDirection {
-        return when (portion) {
-            DisplayPortion.LEFT,
-            DisplayPortion.LEFT_HALF ->
-                PlayerFastSeekOverlay.PerformListener.FastSeekDirection.BACKWARD
-            DisplayPortion.RIGHT,
-            DisplayPortion.RIGHT_HALF ->
-                PlayerFastSeekOverlay.PerformListener.FastSeekDirection.FORWARD
-            else -> PlayerFastSeekOverlay.PerformListener.FastSeekDirection.NONE
-        }
-    }
-
-    override fun seek(forward: Boolean) {
-        if (forward) {
-            playbackModel.stepForward()
-        } else {
-            playbackModel.stepBack()
+    override fun seek(direction: Direction) {
+        when (direction) {
+            Direction.FORWARDS -> playbackModel.stepForward()
+            Direction.BACKWARDS -> playbackModel.stepBackwards()
         }
     }
 }

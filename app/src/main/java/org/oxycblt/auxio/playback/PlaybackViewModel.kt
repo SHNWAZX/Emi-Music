@@ -428,7 +428,7 @@ constructor(
     }
 
     /** Step back by 10 seconds in the current song. */
-    fun stepBack() {
+    fun stepBackwards() {
         L.d("Stepping back 10 seconds")
         val currentPositionMs = playbackManager.progression.calculateElapsedPositionMs()
         val newPositionMs = (currentPositionMs - 10000).coerceAtLeast(0)
@@ -441,7 +441,7 @@ constructor(
         val currentPositionMs = playbackManager.progression.calculateElapsedPositionMs()
         val currentSong = playbackManager.currentSong
         if (currentSong != null) {
-            val newPositionMs = (currentPositionMs + 10000).coerceAtMost(currentSong.durationMs)
+            val newPositionMs = (currentPositionMs + STEP_INCREMENT).coerceAtMost(currentSong.durationMs)
             playbackManager.seekTo(newPositionMs)
         }
     }
@@ -625,6 +625,10 @@ constructor(
             return
         }
         _openPanel.put(panel)
+    }
+
+    private companion object {
+        private const val STEP_INCREMENT = 10000 // ms
     }
 }
 
