@@ -478,10 +478,10 @@
     </style>
     <style name="ThemeOverlay.Auxio.Button.PrimaryTonal" parent="">
         <item name="colorContainer">?attr/colorPrimaryContainer</item>
-        <item name="colorContainerChecked">?attr/colorSecondary</item>
+        <item name="colorContainerChecked">?attr/colorInverseSurface</item>
         <item name="colorContainerUnchecked">?attr/colorPrimaryContainer</item>
         <item name="colorOnContainer">?attr/colorOnPrimaryContainer</item>
-        <item name="colorOnContainerChecked">?attr/colorOnSecondary</item>
+        <item name="colorOnContainerChecked">?attr/colorInverseOnSurface</item>
         <item name="colorOnContainerUnchecked">?attr/colorOnPrimaryContainer</item>
     </style>
 </resources>
