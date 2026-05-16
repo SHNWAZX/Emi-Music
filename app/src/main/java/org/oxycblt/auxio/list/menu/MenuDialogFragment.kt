@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package org.oxycblt.auxio.list.menu
 
 import android.annotation.SuppressLint
@@ -80,7 +80,6 @@ abstract class MenuDialogFragment<M : Menu> :
      * Open the detail view from the header shortcut, if the implementation has a direct route.
      *
      * @param menu The currently-shown menu [M].
-     *
      * @return true if the shortcut was handled.
      */
     open fun onDetailShortcut(menu: M) = false

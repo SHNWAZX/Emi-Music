@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package org.oxycblt.auxio.playback
 
 import androidx.lifecycle.ViewModel
@@ -441,7 +441,8 @@ constructor(
         val currentPositionMs = playbackManager.progression.calculateElapsedPositionMs()
         val currentSong = playbackManager.currentSong
         if (currentSong != null) {
-            val newPositionMs = (currentPositionMs + STEP_INCREMENT).coerceAtMost(currentSong.durationMs)
+            val newPositionMs =
+                (currentPositionMs + STEP_INCREMENT).coerceAtMost(currentSong.durationMs)
             playbackManager.seekTo(newPositionMs)
         }
     }

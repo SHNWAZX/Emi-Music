@@ -69,7 +69,7 @@ object UpdateChecker {
                 L.w(e, "Unable to check for Emi music updates")
                 Result.Failed
             }
-    }
+        }
 
     @SuppressLint("MissingPermission")
     fun showUpdateNotification(context: Context, release: Release): Boolean {
@@ -189,16 +189,13 @@ object UpdateChecker {
         return 0
     }
 
-    data class Release(
-        val tag: String,
-        val name: String,
-        val pageUrl: String,
-        val apkUrl: String?,
-    )
+    data class Release(val tag: String, val name: String, val pageUrl: String, val apkUrl: String?)
 
     sealed interface Result {
         data class Available(val release: Release) : Result
+
         data object Current : Result
+
         data object Failed : Result
     }
 

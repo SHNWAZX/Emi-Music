@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.google.android.material.slider
 
 import android.annotation.SuppressLint
@@ -809,11 +809,7 @@ constructor(
         startPoint.reset()
         val startPosArr = floatArrayOf(startPoint.posVec.x, startPoint.posVec.y)
         val startTanArr = floatArrayOf(startPoint.tanVec.x, startPoint.tanVec.y)
-        pathMeasure.getPosTan(
-            startDistance,
-            startPosArr,
-            startTanArr
-        )
+        pathMeasure.getPosTan(startDistance, startPosArr, startTanArr)
         startPoint.posVec.x = startPosArr[0]
         startPoint.posVec.y = startPosArr[1]
         startPoint.tanVec.x = startTanArr[0]
@@ -822,11 +818,7 @@ constructor(
         endPoint.reset()
         val endPosArr = floatArrayOf(endPoint.posVec.x, endPoint.posVec.y)
         val endTanArr = floatArrayOf(endPoint.tanVec.x, endPoint.tanVec.y)
-        pathMeasure.getPosTan(
-            endDistance,
-            endPosArr,
-            endTanArr
-        )
+        pathMeasure.getPosTan(endDistance, endPosArr, endTanArr)
         endPoint.posVec.x = endPosArr[0]
         endPoint.posVec.y = endPosArr[1]
         endPoint.tanVec.x = endTanArr[0]
