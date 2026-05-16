@@ -134,8 +134,9 @@ abstract class MenuDialogFragment<M : Menu> :
         binding.menuEdit.isVisible = detailItem != null
         if (detailItem != null) {
             binding.menuEdit.setOnClickListener {
+                val root = binding.root
                 findNavController().navigateUp()
-                onClick(detailItem, casted)
+                root.post { onClick(detailItem, casted) }
             }
         } else {
             binding.menuEdit.setOnClickListener(null)
