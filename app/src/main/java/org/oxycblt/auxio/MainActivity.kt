@@ -18,20 +18,29 @@
  
 package org.oxycblt.auxio
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.view.WindowCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.oxycblt.auxio.databinding.ActivityMainBinding
 import org.oxycblt.auxio.playback.PlaybackViewModel
 import org.oxycblt.auxio.playback.state.DeferredPlayback
 import org.oxycblt.auxio.ui.UISettings
+import org.oxycblt.auxio.update.UpdateChecker
 import org.oxycblt.auxio.util.isNight
 import org.oxycblt.auxio.util.systemBarInsetsCompat
 import timber.log.Timber as L
@@ -53,6 +62,17 @@ import timber.log.Timber as L
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val playbackModel: PlaybackViewModel by viewModels()
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                lifecycleScope.launch {
+                    val result = UpdateChecker.check(this@MainActivity, force = true)
+                    if (result is UpdateChecker.Result.Available) {
+                        UpdateChecker.showUpdateNotification(this@MainActivity, result.release)
+                    }
+                }
+            }
+        }
     @Inject lateinit var uiSettings: UISettings
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +82,8 @@ class MainActivity : AppCompatActivity() {
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupEdgeToEdge(binding.root)
+        maybeRequestNotificationPermission()
+        lifecycleScope.launch { UpdateChecker.checkAndNotify(this@MainActivity) }
         L.d("Activity created")
     }
 
@@ -110,6 +132,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return
+        }
+        if (
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        val preferences = getSharedPreferences(PREFS_PERMISSIONS, MODE_PRIVATE)
+        if (preferences.getBoolean(KEY_NOTIFICATIONS_ASKED, false)) {
+            return
+        }
+
+        preferences.edit { putBoolean(KEY_NOTIFICATIONS_ASKED, true) }
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
     /**
      * Transform an [Intent] given to [MainActivity] into a [DeferredPlayback] that can be used in
      * the playback system.
@@ -151,5 +193,7 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val KEY_INTENT_USED = BuildConfig.APPLICATION_ID + ".key.FILE_INTENT_USED"
+        const val PREFS_PERMISSIONS = BuildConfig.APPLICATION_ID + ".permissions"
+        const val KEY_NOTIFICATIONS_ASKED = "notifications_asked"
     }
 }

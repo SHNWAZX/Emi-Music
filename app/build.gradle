@@ -8,6 +8,10 @@ plugins {
     id "com.google.devtools.ksp"
 }
 
+def emiVersionName = "4.0.11"
+def emiUpdateTag =
+        providers.gradleProperty("emiUpdateTag").orElse("emi-music-v${emiVersionName}-local").get()
+
 android {
     // Auxio implicitly depends on the native modules, explicitly specify it
     // here so the libraries are still stripped.
@@ -16,8 +20,10 @@ android {
 
     defaultConfig {
         applicationId "com.shnwazx.emimusic"
-        versionName "4.0.10"
-        versionCode 69
+        versionName emiVersionName
+        versionCode 70
+
+        buildConfigField "String", "UPDATE_TAG", "\"${emiUpdateTag}\""
 
         minSdk min_sdk
         // randomly flickers between deprecated and required depending on what mood my gradle is in
@@ -40,9 +46,19 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("$rootDir/keystore/emi-debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
+            signingConfig signingConfigs.debug
         }
 
         release {

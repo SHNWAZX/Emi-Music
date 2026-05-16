@@ -19,6 +19,7 @@
 package org.oxycblt.auxio.list.menu
 
 import android.view.MenuItem
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
@@ -62,8 +63,8 @@ class SongMenuDialogFragment : MenuDialogFragment<Menu.ForSong>() {
 
     override fun updateMenu(binding: DialogMenuBinding, menu: Menu.ForSong) {
         val context = requireContext()
+        binding.menuType.isVisible = false
         binding.menuCover.bind(menu.song)
-        binding.menuType.text = getString(R.string.lbl_song)
         binding.menuName.text = menu.song.name.resolve(context)
         binding.menuInfo.text = menu.song.artists.resolveNames(context)
     }

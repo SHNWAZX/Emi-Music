@@ -23,17 +23,21 @@ import android.text.format.Formatter
 import android.view.LayoutInflater
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialFadeThrough
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.oxycblt.auxio.BuildConfig
 import org.oxycblt.auxio.R
 import org.oxycblt.auxio.databinding.FragmentAboutBinding
 import org.oxycblt.auxio.music.MusicViewModel
 import org.oxycblt.auxio.playback.formatDurationMs
 import org.oxycblt.auxio.ui.ViewBindingFragment
+import org.oxycblt.auxio.update.UpdateChecker
 import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.auxio.util.openInBrowser
+import org.oxycblt.auxio.util.showToast
 import org.oxycblt.auxio.util.systemBarInsetsCompat
 
 /**
@@ -63,6 +67,7 @@ class AboutFragment : ViewBindingFragment<FragmentAboutBinding>() {
             insets
         }
         binding.aboutVersion.text = BuildConfig.VERSION_NAME
+        binding.aboutUpdate.setOnClickListener { checkForUpdates() }
         binding.aboutCode.setOnClickListener { requireContext().openInBrowser(LINK_SOURCE) }
         binding.aboutLicenses.setOnClickListener { requireContext().openInBrowser(LINK_LICENSES) }
         binding.aboutProfile.setOnClickListener { requireContext().openInBrowser(LINK_PROFILE) }
@@ -72,6 +77,24 @@ class AboutFragment : ViewBindingFragment<FragmentAboutBinding>() {
 
         // VIEWMODEL SETUP
         collectImmediately(musicModel.statistics, ::updateStatistics)
+    }
+
+    private fun checkForUpdates() {
+        val binding = requireBinding()
+        val context = requireContext()
+        context.showToast(R.string.lng_update_checking)
+        binding.aboutUpdate.isEnabled = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            when (val result = UpdateChecker.check(context, force = true)) {
+                is UpdateChecker.Result.Available -> {
+                    UpdateChecker.showUpdateNotification(context, result.release)
+                    context.openInBrowser(result.release.apkUrl ?: result.release.pageUrl)
+                }
+                UpdateChecker.Result.Current -> context.showToast(R.string.lng_update_current)
+                UpdateChecker.Result.Failed -> context.showToast(R.string.err_update_check_failed)
+            }
+            binding.aboutUpdate.isEnabled = true
+        }
     }
 
     private fun updateStatistics(statistics: MusicViewModel.Statistics?) {

@@ -168,6 +168,8 @@
 
     <string name="lbl_about">About</string>
     <string name="lbl_version">Version</string>
+    <string name="lbl_check_updates">Check for updates</string>
+    <string name="lbl_update_available">Update available</string>
     <string name="lbl_code">GitHub repository</string>
     <string name="lbl_wiki">Wiki</string>
     <string name="lbl_licenses">Licenses</string>
@@ -203,6 +205,10 @@
     <string name="lng_playlist_exported">Playlist exported</string>
     <string name="lng_playlist_deleted">Playlist deleted</string>
     <string name="lng_playlist_added">Added to playlist</string>
+    <string name="lng_update_checking">Checking for updates...</string>
+    <string name="lng_update_current">Emi music is up to date</string>
+    <string name="lng_update_available">Emi music %1$s is available. Tap to install the new APK.</string>
+    <string name="err_update_check_failed">Unable to check for updates</string>
     <string name="lng_supporters_promo">Donate to the project to get your name added here!</string>
     <!-- As in music library -->
     <string name="lng_search_library">Search your library…</string>

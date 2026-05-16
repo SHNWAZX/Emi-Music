@@ -25,8 +25,10 @@ import android.view.MenuItem
 import androidx.appcompat.view.SupportMenuInflater
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import org.oxycblt.auxio.R
 import org.oxycblt.auxio.databinding.DialogMenuBinding
 import org.oxycblt.auxio.list.ClickableListListener
 import org.oxycblt.auxio.list.ListViewModel
@@ -97,6 +99,7 @@ abstract class MenuDialogFragment<M : Menu> :
         super.onDestroyBinding(binding)
         binding.menuName.isSelected = false
         binding.menuInfo.isSelected = false
+        binding.menuEdit.setOnClickListener(null)
         binding.menuOptionRecycler.adapter = null
     }
 
@@ -126,8 +129,20 @@ abstract class MenuDialogFragment<M : Menu> :
             }
         menuAdapter.update(visible, UpdateInstructions.Diff)
 
+        val detailItem = visible.firstOrNull { it.itemId == R.id.action_detail && it.isEnabled }
+        val binding = requireBinding()
+        binding.menuEdit.isVisible = detailItem != null
+        if (detailItem != null) {
+            binding.menuEdit.setOnClickListener {
+                findNavController().navigateUp()
+                onClick(detailItem, casted)
+            }
+        } else {
+            binding.menuEdit.setOnClickListener(null)
+        }
+
         // Delegate to impl how to show music
-        updateMenu(requireBinding(), casted)
+        updateMenu(binding, casted)
     }
 
     final override fun onClick(item: MenuItem, viewHolder: RecyclerView.ViewHolder) {

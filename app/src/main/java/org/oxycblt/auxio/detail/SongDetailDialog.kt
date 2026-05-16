@@ -20,17 +20,17 @@ package org.oxycblt.auxio.detail
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
-import org.oxycblt.auxio.R
 import org.oxycblt.auxio.databinding.DialogSongDetailBinding
 import org.oxycblt.auxio.detail.list.SongProperty
 import org.oxycblt.auxio.detail.list.SongPropertyAdapter
 import org.oxycblt.auxio.list.adapter.UpdateInstructions
-import org.oxycblt.auxio.ui.ViewBindingMaterialDialogFragment
+import org.oxycblt.auxio.music.resolve
+import org.oxycblt.auxio.music.resolveNames
+import org.oxycblt.auxio.ui.ViewBindingBottomSheetDialogFragment
 import org.oxycblt.auxio.util.collectImmediately
 import org.oxycblt.musikr.Song
 import timber.log.Timber as L
@@ -41,7 +41,7 @@ import timber.log.Timber as L
  * @author Alexander Capehart (OxygenCobalt)
  */
 @AndroidEntryPoint
-class SongDetailDialog : ViewBindingMaterialDialogFragment<DialogSongDetailBinding>() {
+class SongDetailDialog : ViewBindingBottomSheetDialogFragment<DialogSongDetailBinding>() {
     private val detailModel: DetailViewModel by activityViewModels()
     // Information about what song to display is initially within the navigation arguments
     // as a UID, as that is the only safe way to parcel an song.
@@ -51,13 +51,10 @@ class SongDetailDialog : ViewBindingMaterialDialogFragment<DialogSongDetailBindi
     override fun onCreateBinding(inflater: LayoutInflater) =
         DialogSongDetailBinding.inflate(inflater)
 
-    override fun onConfigDialog(builder: AlertDialog.Builder) {
-        super.onConfigDialog(builder)
-        builder.setTitle(R.string.lbl_props).setPositiveButton(R.string.lbl_ok, null)
-    }
-
     override fun onBindingCreated(binding: DialogSongDetailBinding, savedInstanceState: Bundle?) {
         super.onBindingCreated(binding, savedInstanceState)
+        binding.detailName.isSelected = true
+        binding.detailInfo.isSelected = true
         binding.detailProperties.adapter = detailAdapter
         // DetailViewModel handles most initialization from the navigation argument.
         detailModel.setSong(args.songUid)
@@ -66,12 +63,25 @@ class SongDetailDialog : ViewBindingMaterialDialogFragment<DialogSongDetailBindi
         collectImmediately(detailModel.currentSongProperties, ::updateSongProperties)
     }
 
+    override fun onDestroyBinding(binding: DialogSongDetailBinding) {
+        super.onDestroyBinding(binding)
+        binding.detailName.isSelected = false
+        binding.detailInfo.isSelected = false
+        binding.detailProperties.adapter = null
+    }
+
     private fun updateSong(song: Song?) {
-        L.d("No song to show, navigating away")
         if (song == null) {
+            L.d("No song to show, navigating away")
             findNavController().navigateUp()
             return
         }
+
+        val binding = requireBinding()
+        val context = requireContext()
+        binding.detailCover.bind(song)
+        binding.detailName.text = song.name.resolve(context)
+        binding.detailInfo.text = song.artists.resolveNames(context)
     }
 
     private fun updateSongProperties(songProperties: List<SongProperty>) {

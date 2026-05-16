@@ -11,72 +11,96 @@
     from flipping out and not allowing the RecyclerView to scroll fully.
     -->
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:id="@+id/menu_handle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content" />
 
-        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
-            android:id="@+id/menu_handle"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/menu_header_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginBottom="@dimen/spacing_small"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        app:cardElevation="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:minHeight="104dp"
+            android:padding="@dimen/spacing_medium">
 
-        <org.oxycblt.auxio.image.CoverView
-            android:id="@+id/menu_cover"
-            style="@style/Widget.Auxio.Image.MidFull"
-            android:layout_marginStart="@dimen/spacing_medium"
-            android:layout_marginBottom="@dimen/spacing_medium"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/menu_handle" />
+            <org.oxycblt.auxio.image.CoverView
+                android:id="@+id/menu_cover"
+                style="@style/Widget.Auxio.Image.MidFull"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/menu_type"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/spacing_medium"
-            android:layout_marginTop="@dimen/spacing_small"
-            android:textAppearance="?attr/textAppearanceLabelMediumEmphasized"
-            android:textColor="?attr/colorSecondary"
-            app:layout_constraintBottom_toTopOf="@+id/menu_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/menu_cover"
-            app:layout_constraintTop_toTopOf="@+id/menu_cover"
-            app:layout_constraintVertical_chainStyle="packed"
-            tools:text="Type" />
+            <TextView
+                android:id="@+id/menu_type"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_marginEnd="@dimen/spacing_medium"
+                android:textAppearance="?attr/textAppearanceLabelMediumEmphasized"
+                android:textColor="?attr/colorSecondary"
+                app:layout_constraintBottom_toTopOf="@+id/menu_name"
+                app:layout_constraintEnd_toStartOf="@+id/menu_edit"
+                app:layout_constraintStart_toEndOf="@+id/menu_cover"
+                app:layout_constraintTop_toTopOf="@+id/menu_cover"
+                app:layout_constraintVertical_chainStyle="packed"
+                tools:text="Song" />
 
-        <TextView
-            android:id="@+id/menu_name"
-            style="@style/Widget.Auxio.TextView.Primary"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/menu_info"
-            app:layout_constraintEnd_toEndOf="@+id/menu_type"
-            app:layout_constraintStart_toStartOf="@+id/menu_type"
-            app:layout_constraintTop_toBottomOf="@+id/menu_type"
-            tools:text="Name" />
+            <TextView
+                android:id="@+id/menu_name"
+                style="@style/Widget.Auxio.TextView.Primary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_marginEnd="@dimen/spacing_medium"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                app:layout_constraintBottom_toTopOf="@+id/menu_info"
+                app:layout_constraintEnd_toStartOf="@+id/menu_edit"
+                app:layout_constraintStart_toEndOf="@+id/menu_cover"
+                app:layout_constraintTop_toBottomOf="@+id/menu_type"
+                tools:text="Tumko chahungalovehindisongs" />
 
-        <TextView
-            android:id="@+id/menu_info"
-            style="@style/Widget.Auxio.TextView.Secondary.Marquee"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/spacing_small"
-            android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintBottom_toBottomOf="@+id/menu_cover"
-            app:layout_constraintEnd_toEndOf="@+id/menu_type"
-            app:layout_constraintStart_toStartOf="@+id/menu_name"
-            app:layout_constraintTop_toBottomOf="@+id/menu_name"
-            tools:text="Info A" />
+            <TextView
+                android:id="@+id/menu_info"
+                style="@style/Widget.Auxio.TextView.Secondary.Marquee"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_marginEnd="@dimen/spacing_medium"
+                android:textColor="?android:attr/textColorSecondary"
+                app:layout_constraintBottom_toBottomOf="@+id/menu_cover"
+                app:layout_constraintEnd_toStartOf="@+id/menu_edit"
+                app:layout_constraintStart_toEndOf="@+id/menu_cover"
+                app:layout_constraintTop_toBottomOf="@+id/menu_name"
+                tools:text="Unknown artist" />
 
-        <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/menu_mode_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            app:layout_constraintTop_toBottomOf="@+id/menu_cover" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_edit"
+                style="@style/Widget.Auxio.Button.Icon.Small.Secondary"
+                android:layout_width="@dimen/size_touchable_small"
+                android:layout_height="@dimen/size_touchable_small"
+                android:contentDescription="@string/lbl_song_detail"
+                app:icon="@drawable/ic_edit_24"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/menu_mode_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small" />
 
     <org.oxycblt.auxio.list.recycler.AuxioRecyclerView
         android:id="@+id/menu_option_recycler"
@@ -84,7 +108,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:overScrollMode="never"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/menu_mode_group"
         tools:listitem="@layout/item_menu_option" />
 </LinearLayout>

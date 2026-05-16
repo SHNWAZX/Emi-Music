@@ -59,6 +59,8 @@ object IntegerTable {
     const val PLAYBACK_NOTIFICATION_CODE = 0xA0A0
     /** "Music loading" notification code */
     const val INDEXER_NOTIFICATION_CODE = 0xA0A1
+    /** "App update available" notification code */
+    const val UPDATE_NOTIFICATION_CODE = 0xA0A2
     /** MainActivity Intent request code */
     const val REQUEST_CODE = 0xA0C0
     /** Activity AuxioService Start ID */
