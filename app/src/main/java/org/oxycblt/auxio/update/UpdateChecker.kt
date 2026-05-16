@@ -7,7 +7,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  */
-
+ 
 package org.oxycblt.auxio.update
 
 import android.Manifest
