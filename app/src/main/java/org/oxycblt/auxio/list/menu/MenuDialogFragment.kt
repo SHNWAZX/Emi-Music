@@ -76,6 +76,15 @@ abstract class MenuDialogFragment<M : Menu> :
      */
     abstract fun onClick(item: MenuItem, menu: M)
 
+    /**
+     * Open the detail view from the header shortcut, if the implementation has a direct route.
+     *
+     * @param menu The currently-shown menu [M].
+     *
+     * @return true if the shortcut was handled.
+     */
+    open fun onDetailShortcut(menu: M) = false
+
     override fun onCreateBinding(inflater: LayoutInflater) = DialogMenuBinding.inflate(inflater)
 
     override fun onBindingCreated(binding: DialogMenuBinding, savedInstanceState: Bundle?) {
@@ -134,9 +143,11 @@ abstract class MenuDialogFragment<M : Menu> :
         binding.menuEdit.isVisible = detailItem != null
         if (detailItem != null) {
             binding.menuEdit.setOnClickListener {
-                val root = binding.root
-                findNavController().navigateUp()
-                root.post { onClick(detailItem, casted) }
+                if (!onDetailShortcut(casted)) {
+                    val root = binding.root
+                    findNavController().navigateUp()
+                    root.post { onClick(detailItem, casted) }
+                }
             }
         } else {
             binding.menuEdit.setOnClickListener(null)

@@ -19,9 +19,11 @@
 package org.oxycblt.auxio.list.menu
 
 import android.view.MenuItem
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.oxycblt.auxio.R
@@ -38,6 +40,7 @@ import org.oxycblt.auxio.util.share
 import org.oxycblt.auxio.util.showToast
 import org.oxycblt.musikr.Artist
 import org.oxycblt.musikr.Genre
+import org.oxycblt.musikr.Music
 import org.oxycblt.musikr.Playlist
 import org.oxycblt.musikr.Song
 
@@ -89,6 +92,9 @@ class SongMenuDialogFragment : MenuDialogFragment<Menu.ForSong>() {
             else -> error("Unexpected menu item selected $item")
         }
     }
+
+    override fun onDetailShortcut(menu: Menu.ForSong) =
+        openDetailDestination(R.id.song_detail_dialog, "songUid", menu.song.uid)
 }
 
 /**
@@ -138,6 +144,9 @@ class AlbumMenuDialogFragment : MenuDialogFragment<Menu.ForAlbum>() {
             else -> error("Unexpected menu item selected $item")
         }
     }
+
+    override fun onDetailShortcut(menu: Menu.ForAlbum) =
+        openDetailDestination(R.id.album_detail_fragment, "albumUid", menu.album.uid)
 }
 
 /**
@@ -212,6 +221,9 @@ class ArtistMenuDialogFragment : MenuDialogFragment<Menu.ForArtist>() {
             else -> error("Unexpected menu item $item")
         }
     }
+
+    override fun onDetailShortcut(menu: Menu.ForArtist) =
+        openDetailDestination(R.id.artist_detail_fragment, "artistUid", menu.artist.uid)
 }
 
 /**
@@ -264,6 +276,9 @@ class GenreMenuDialogFragment : MenuDialogFragment<Menu.ForGenre>() {
             else -> error("Unexpected menu item $item")
         }
     }
+
+    override fun onDetailShortcut(menu: Menu.ForGenre) =
+        openDetailDestination(R.id.genre_detail_fragment, "genreUid", menu.genre.uid)
 }
 
 /**
@@ -334,6 +349,19 @@ class PlaylistMenuDialogFragment : MenuDialogFragment<Menu.ForPlaylist>() {
             else -> error("Unexpected menu item $item")
         }
     }
+
+    override fun onDetailShortcut(menu: Menu.ForPlaylist) =
+        openDetailDestination(R.id.playlist_detail_fragment, "playlistUid", menu.playlist.uid)
+}
+
+private fun MenuDialogFragment<*>.openDetailDestination(
+    destinationId: Int,
+    argumentName: String,
+    uid: Music.UID,
+): Boolean {
+    findNavController().popBackStack()
+    findNavController().navigate(destinationId, bundleOf(argumentName to uid))
+    return true
 }
 
 /**
